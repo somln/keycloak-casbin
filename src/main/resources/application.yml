@@ -1,7 +1,7 @@
 spring:
   datasource:
     # docker compose 사용 시 수정 예정
-    url: jdbc:postgresql://localhost:5432/mydb
+    url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: 1234
     driver-class-name: org.postgresql.Driver
@@ -12,3 +12,14 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
+
+keycloak:
+  enabled: true
+  realm: test
+  auth-server-url: http://localhost:8180
+  ssl-required: external
+  resource: test_client
+  credentials:
+    secret: 0oZHvIo0UEpUtk9vGY2qyk55p5SVPxtr
+  use-resource-role-mappings: true
+  bearer-only: true
