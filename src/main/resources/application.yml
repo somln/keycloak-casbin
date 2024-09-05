@@ -23,3 +23,12 @@ keycloak:
     secret: 0oZHvIo0UEpUtk9vGY2qyk55p5SVPxtr
   use-resource-role-mappings: true
   bearer-only: true
+
+# Custom properties for token retrieval
+custom-keycloak:
+  grant_type: password
+  client_id: main_client
+  client_secret: gIFpRI1RxEybrvSX44qkckirT1cPcFnE
+  username: admin_user
+  password: 1234
+  token_url: http://localhost:8180/realms/board/protocol/openid-connect/token
