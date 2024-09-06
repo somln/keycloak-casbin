@@ -17,7 +17,6 @@ public class UserController {
     @Autowired
     public UserController(KeyCloakClient keyCloakClient) {
         this.keyCloakClient = keyCloakClient;
-        this.keyCloakClient.init();
     }
 
     @PostMapping("/signup")
@@ -26,8 +25,4 @@ public class UserController {
         return keyCloakClient.signup(signupDto);
     }
 
-    @GetMapping("/validate")
-    public String validate(@RequestParam String accessToken){
-        return keyCloakClient.validateToken(accessToken);
-    }
 }
