@@ -1,4 +1,4 @@
-package folletto.toyproject.auth;
+package folletto.toyproject.domain.user;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

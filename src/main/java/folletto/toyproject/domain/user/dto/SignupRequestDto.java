@@ -1,4 +1,4 @@
-package folletto.toyproject.auth.dto;
+package folletto.toyproject.domain.user.dto;
 
 public record SignupRequestDto(
         String email,

@@ -1,4 +1,4 @@
-package folletto.toyproject.keycloak;
+package folletto.toyproject.global.keycloak;
 
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
@@ -10,8 +10,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
@@ -28,11 +26,6 @@ public class KeycloakSecurityConfig extends KeycloakWebSecurityConfigurerAdapter
                 .antMatchers("/api/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .logout()
-                .logoutUrl("/logout")
-                .logoutSuccessHandler(logoutSuccessHandler(
-                        "http://localshot:8081/auth/realms/MSA/protocol/openid-connect/logout?redirect_uri=http://localhost:8080"))
-                .and()
                 .csrf().disable();
     }
 
@@ -47,11 +40,5 @@ public class KeycloakSecurityConfig extends KeycloakWebSecurityConfigurerAdapter
     @Override
     protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
         return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
-    }
-
-    public LogoutSuccessHandler logoutSuccessHandler(String uri) {
-        SimpleUrlLogoutSuccessHandler successHandler = new SimpleUrlLogoutSuccessHandler();
-        successHandler.setDefaultTargetUrl(uri);
-        return successHandler;
     }
 }

@@ -15,20 +15,16 @@ spring:
 
 keycloak:
   enabled: true
-  realm: test
-  auth-server-url: http://localhost:8180
+  realm: ${KEYCLOAK_REALM}
+  auth-server-url: ${KEYCLOAK_HOST_URL}
   ssl-required: external
-  resource: test_client
-  credentials:
-    secret: 0oZHvIo0UEpUtk9vGY2qyk55p5SVPxtr
+  resource: ${KEYCLOAK_CLIENT_ID}
   use-resource-role-mappings: true
   bearer-only: true
 
-# Custom properties for token retrieval
 custom-keycloak:
-  grant_type: password
-  client_id: main_client
-  client_secret: gIFpRI1RxEybrvSX44qkckirT1cPcFnE
-  username: admin_user
-  password: 1234
-  token_url: http://localhost:8180/realms/board/protocol/openid-connect/token
+  grant_type: ${KEYCLOAK_GRANT_TYPE}
+  admin_username: ${KEYCLOAK_ADMIN_USERNAME}
+  admin_password: ${KEYCLOAK_ADMIN_PASSWORD}
+  get_token_url: ${KEYCLOAK_TOKEN_URL}
+  signup_url: ${KEYCLOAK_SIGNUP_URL}

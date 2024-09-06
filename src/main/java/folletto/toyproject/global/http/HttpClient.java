@@ -1,4 +1,4 @@
-package folletto.toyproject.http;
+package folletto.toyproject.global.http;
 
 import com.google.gson.Gson;
 import java.io.IOException;
