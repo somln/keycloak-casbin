@@ -1,45 +1,29 @@
 package folletto.toyproject.global.keycloak;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import folletto.toyproject.domain.user.dto.SignupRequestDto;
 import folletto.toyproject.global.http.HttpClient;
 import okhttp3.Response;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
 public class KeyCloakClient {
 
-    @Value("${keycloak.auth-server-url}")
-    private String hostUrl;
+    private final KeycloakProperties keycloakProperties;
+    private final HttpClient httpClient;
 
-    @Value("${keycloak.resource}")
-    private String clientId;
-
-    @Value("${custom-keycloak.admin_username}")
-    private String username;
-
-    @Value("${custom-keycloak.admin_password}")
-    private String password;
-
-    @Value("${custom-keycloak.grant_type}")
-    private String grantType;
-
-    @Value("${custom-keycloak.get_token_url}")
-    private String getTokenUrl;
-
-    @Value("${custom-keycloak.signup_url}")
-    private String signupUrl;
-
+    public KeyCloakClient(KeycloakProperties keycloakProperties, HttpClient httpClient) {
+        this.keycloakProperties = keycloakProperties;
+        this.httpClient = httpClient;
+    }
 
     private String token;
-
-    private final HttpClient httpClient = new HttpClient();
-
 
     public void init() {
         this.token = getNewToken();
@@ -48,12 +32,13 @@ public class KeyCloakClient {
     public String getNewToken() {
         try {
             Map<String, String> formParams = new HashMap<>();
-            formParams.put("grant_type", grantType);
-            formParams.put("client_id", clientId);
-            formParams.put("username", username);
-            formParams.put("password", password);
+            formParams.put("grant_type", keycloakProperties.getGrantType());
+            formParams.put("client_id", keycloakProperties.getClientId());
+            formParams.put("client_secret", keycloakProperties.getClientSecret());
+            formParams.put("username", keycloakProperties.getUsername());
+            formParams.put("password", keycloakProperties.getPassword());
 
-            String responseBody = httpClient.postForm(hostUrl + getTokenUrl, formParams).body().string();
+            String responseBody = httpClient.postForm(keycloakProperties.getHostUrl() + keycloakProperties.getGetTokenUrl(), formParams).body().string();
             return extractTokenFromResponse(responseBody);
         } catch (IOException e) {
             throw new RuntimeException("Failed to get token from KeyCloak", e);
@@ -67,7 +52,34 @@ public class KeyCloakClient {
     }
 
     public Response signup(SignupRequestDto signupDto) throws IOException {
-        return httpClient.post(hostUrl + signupUrl, token, signupDto);
+        return httpClient.post(keycloakProperties.getHostUrl() + keycloakProperties.getSignupUrl(), token, signupDto);
     }
 
+    public String validateToken(String accessToken) {
+        try {
+            String url = keycloakProperties.getHostUrl() + keycloakProperties.getValidateTokenUrl();
+            Map<String, String> formParams = new HashMap<>();
+            formParams.put("client_id", keycloakProperties.getClientId());
+            formParams.put("client_secret", keycloakProperties.getClientSecret());
+            formParams.put("token", accessToken);
+            String responseBody = httpClient.postForm(url, formParams).body().string();
+
+            return parseTokenResponse(responseBody);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to validate token with Keycloak", e);
+        }
+    }
+
+    public String parseTokenResponse(String responseBody) {
+        Gson gson = new Gson();
+        JsonObject jsonObject = gson.fromJson(responseBody, JsonObject.class);
+
+        // `active` 필드가 불리언 타입인 경우 직접 확인
+        boolean isActive = jsonObject.get("active").getAsBoolean();
+
+        if (isActive) {
+            return jsonObject.get("sub").getAsString();
+        }
+        return null;
+    }
 }

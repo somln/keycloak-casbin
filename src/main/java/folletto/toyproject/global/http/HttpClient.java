@@ -5,7 +5,12 @@ import java.io.IOException;
 import java.util.Map;
 import okhttp3.*;
 import okhttp3.OkHttpClient;
+import org.checkerframework.checker.units.qual.C;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestController;
 
+@Component
+@RestController
 public class HttpClient {
 
     private final OkHttpClient okHttpClient;
