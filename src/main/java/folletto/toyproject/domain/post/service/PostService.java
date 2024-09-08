@@ -29,13 +29,12 @@ public class PostService {
     public void createPost(PostRequest createPostRequest, String token) {
         String userUUID = keyCloakClient.validateToken(token);
         UserEntity user = findUserByUUID(userUUID);
-        postRepository.save(PostEntity.from(createPostRequest, user.getUserId()));
+        postRepository.save(PostEntity.of(createPostRequest, user.getUserId()));
     }
 
     private UserEntity findUserByUUID(String userUUID) {
         return userRepository.findByUserUUID(userUUID)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
-
     }
 
     @Transactional
@@ -68,26 +67,30 @@ public class PostService {
     }
 
     public PostResponse findPost(Long postId, String token) {
-        keyCloakClient.validateToken(token);
-        return PostResponse.from(findPostById(postId));
+        String userUUID = keyCloakClient.validateToken(token);
+        UserEntity user = findUserByUUID(userUUID);
+        return PostResponse.from(findPostById(postId), user);
     }
 
     public PostListResponse findPosts(String sort, Pageable pageable, String token) {
-        keyCloakClient.validateToken(token);
+        String userUUID = keyCloakClient.validateToken(token);
         Page<PostEntity> posts;
-        if(SortType.fromDescription(sort).equals(SortType.DESC)){
+        if (SortType.fromDescription(sort).equals(SortType.DESC)) {
             posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
-        }
-        else{
+        } else {
             posts = postRepository.findAllByOrderByCreatedAtAsc(pageable);
         }
-        List<PostResponse> postResponses = posts.getContent().stream().map(PostResponse::from).toList();
+        UserEntity user = findUserByUUID(userUUID);
+        List<PostResponse> postResponses = posts.getContent().stream()
+                .map(post -> PostResponse.from(post, user)).
+                toList();
         return PostListResponse.from(postResponses, posts);
     }
 
     public List<PostResponse> searchPosts(String keyword, String token) {
-        keyCloakClient.validateToken(token);
+        String userUUID = keyCloakClient.validateToken(token);
+        UserEntity user = findUserByUUID(userUUID);
         List<PostEntity> posts = postRepository.searchByTitleOrContent(keyword);
-        return posts.stream().map(PostResponse::from).toList();
+        return posts.stream().map(post -> PostResponse.from(post, user)).toList();
     }
 }

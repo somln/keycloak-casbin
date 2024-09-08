@@ -38,7 +38,7 @@ public class PostEntity extends BaseTimeEntity {
         this.isUpdated =  isUpdated;
     }
 
-    public static PostEntity from(PostRequest postRequest, Long userId) {
+    public static PostEntity of(PostRequest postRequest, Long userId) {
         return PostEntity.builder()
                 .title(postRequest.title())
                 .content(postRequest.content())

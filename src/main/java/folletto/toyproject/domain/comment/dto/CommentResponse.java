@@ -1,13 +1,12 @@
-package folletto.toyproject.domain.post.dto;
+package folletto.toyproject.domain.comment.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import folletto.toyproject.domain.post.entity.PostEntity;
+import folletto.toyproject.domain.comment.entity.CommentEntity;
 import folletto.toyproject.domain.user.entity.UserEntity;
 import java.time.LocalDateTime;
 
-public record PostResponse (
-        Long postId,
-        String title,
+public record CommentResponse (
+        Long commentId,
         String content,
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -17,13 +16,12 @@ public record PostResponse (
         Long userId,
         String username
 ){
-    public static PostResponse from(PostEntity post, UserEntity user){
-        return new PostResponse(
-                post.getPostId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getCreatedAt(),
-                post.isUpdated(),
+    public static CommentResponse of(CommentEntity comment, UserEntity user){
+        return new CommentResponse(
+                comment.getCommentId(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.isUpdated(),
                 user.getUserId(),
                 user.getUsername()
         );
