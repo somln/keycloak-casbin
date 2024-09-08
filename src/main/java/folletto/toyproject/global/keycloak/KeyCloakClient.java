@@ -71,8 +71,9 @@ public class KeyCloakClient {
         }
     }
 
-    public String validateToken(String accessToken) {
+    public String validateToken(String token) {
         try {
+            String accessToken = token.replace("bearer ", "");
             Map<String, String> formParams = createTokenValidationParams(accessToken);
             String responseBody = httpClient.postForm(buildUrl(keycloakProperties.getValidateTokenUrl()), formParams).body().string();
             return parseTokenResponse(responseBody);
@@ -93,7 +94,11 @@ public class KeyCloakClient {
         JsonObject jsonObject = gson.fromJson(responseBody, JsonObject.class);
 
         if (jsonObject.get("active").getAsBoolean()) {
-            return jsonObject.get("sub").getAsString();
+            if(jsonObject.get("azp").getAsString().equals(keycloakProperties.getClientId())) {
+                return jsonObject.get("sub").getAsString();
+            } else {
+                throw new ApplicationException(ErrorCode.SESSION_INVALID);
+            }
         } else {
             throw new ApplicationException(ErrorCode.SESSION_INVALID);
         }

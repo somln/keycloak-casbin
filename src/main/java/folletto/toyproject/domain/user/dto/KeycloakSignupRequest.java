@@ -17,5 +17,4 @@ public record KeycloakSignupRequest(
                 Collections.singletonList(CredentialRepresentation.from(signupRequest.password())),
                 true);
     }
-
 }
