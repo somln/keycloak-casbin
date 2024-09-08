@@ -1,4 +1,4 @@
-package folletto.toyproject.domain.user;
+package folletto.toyproject.domain.user.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

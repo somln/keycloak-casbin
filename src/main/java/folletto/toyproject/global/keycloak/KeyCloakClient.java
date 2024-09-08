@@ -2,7 +2,7 @@ package folletto.toyproject.global.keycloak;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import folletto.toyproject.domain.user.dto.SignupRequestDto;
+import folletto.toyproject.domain.user.dto.KeycloakSignupRequest;
 import folletto.toyproject.global.exception.ApplicationException;
 import folletto.toyproject.global.exception.ErrorCode;
 import folletto.toyproject.global.http.HttpClient;
@@ -24,8 +24,8 @@ public class KeyCloakClient {
     public KeyCloakClient(KeycloakProperties keycloakProperties, HttpClient httpClient) {
         this.keycloakProperties = keycloakProperties;
         this.httpClient = httpClient;
-        this.gson = new Gson();  // Gson 객체를 재사용하도록 변경
-        init();  // 초기화 로직을 생성자에 포함
+        this.gson = new Gson();
+        init();
     }
 
     private void init() {
@@ -57,8 +57,18 @@ public class KeyCloakClient {
         return map.get("access_token");
     }
 
-    public Response signup(SignupRequestDto signupDto) throws IOException {
-        return httpClient.post(buildUrl(keycloakProperties.getSignupUrl()), token, signupDto);
+    public String signup(KeycloakSignupRequest signupDto) {
+        try {
+            Response response = httpClient.post(buildUrl(keycloakProperties.getSignupUrl()), token,
+                    signupDto);
+
+            String location = response.header("Location");
+
+            String userUUID = location.substring(location.lastIndexOf("/") + 1);
+            return userUUID;
+        } catch (IOException e) {
+            throw new ApplicationException(ErrorCode.SIGNUP_FAILED);
+        }
     }
 
     public String validateToken(String accessToken) {
