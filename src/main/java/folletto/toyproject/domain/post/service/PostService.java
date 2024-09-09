@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.keycloak.KeycloakPrincipal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,56 +30,59 @@ public class PostService {
     private final KeyCloakClient keyCloakClient;
 
     @Transactional
-    public void createPost(PostRequest createPostRequest, String userUUID) throws ApplicationException {
-        // 또는 userDetails에 따라 다른 방법으로 UUID를 추출
+    public void createPost(PostRequest createPostRequest) {
+        String userUUID = getCurrentUserUUID();
         UserEntity user = findUserByUUID(userUUID);
         postRepository.save(PostEntity.of(createPostRequest, user.getUserId()));
     }
 
     @Transactional
-    public void updatePost(Long postId, PostRequest postRequest, String token) {
-        UserEntity user = authenticateUser(token);
+    public void updatePost(Long postId, PostRequest postRequest) {
+        String userUUID = getCurrentUserUUID();
+        UserEntity user = findUserByUUID(userUUID);
         PostEntity post = findPostById(postId);
         validateAuthor(user, post);
         post.update(postRequest);
     }
 
     @Transactional
-    public void deletePost(Long postId, String token) {
-        UserEntity user = authenticateUser(token);
+    public void deletePost(Long postId) {
+        String userUUID = getCurrentUserUUID();
+        UserEntity user = findUserByUUID(userUUID);
         PostEntity post = findPostById(postId);
         validateAuthor(user, post);
         postRepository.delete(post);
     }
 
-    public PostResponse findPost(Long postId, String token) {
-        authenticateUser(token);
+    public PostResponse findPost(Long postId) {
         PostEntity post = findPostById(postId);
         UserEntity user = findUserById(post.getUserId());
         return PostResponse.from(findPostById(postId), user);
     }
 
-    public PostListResponse findPosts(String sort, Pageable pageable, String token) {
-        authenticateUser(token);
+    public PostListResponse findPosts(String sort, Pageable pageable) {
+        String userUUID = getCurrentUserUUID();
+        UserEntity user = findUserByUUID(userUUID);
         Page<PostEntity> posts = fetchSortedPosts(sort, pageable);
         List<PostResponse> postResponses = posts.getContent().stream()
                 .map(post -> {
-                    UserEntity user = findUserById(post.getUserId());
-                    return PostResponse.from(post, user);
+                    UserEntity userEntity = findUserById(post.getUserId());
+                    return PostResponse.from(post, userEntity);
                 })
                 .toList();
         return PostListResponse.from(postResponses, posts);
     }
 
-    public List<PostResponse> searchPosts(String keyword, String token) {
-        UserEntity user = authenticateUser(token);
+    public List<PostResponse> searchPosts(String keyword) {
         List<PostEntity> posts = postRepository.searchByTitleOrContent(keyword);
+        String userUUID = getCurrentUserUUID();
+        UserEntity user = findUserByUUID(userUUID);
         return posts.stream().map(post -> PostResponse.from(post, user)).toList();
     }
 
-    private UserEntity authenticateUser(String token) {
-        String userUUID = keyCloakClient.validateToken(token);
-        return findUserByUUID(userUUID);
+    private String getCurrentUserUUID() {
+        KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return principal.getName();
     }
 
     private UserEntity findUserByUUID(String userUUID) {
@@ -91,7 +94,6 @@ public class PostService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
     }
-
 
     private PostEntity findPostById(Long postId) {
         return postRepository.findById(postId)

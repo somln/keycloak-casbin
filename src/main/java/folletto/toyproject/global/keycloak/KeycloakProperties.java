@@ -14,9 +14,6 @@ public class KeycloakProperties {
     @Value("${keycloak.resource}")
     private String clientId;
 
-    @Value("${custom-keycloak.client_secret}")
-    private String clientSecret;
-
     @Value("${custom-keycloak.admin_username}")
     private String username;
 
@@ -32,7 +29,12 @@ public class KeycloakProperties {
     @Value("${custom-keycloak.signup_url}")
     private String signupUrl;
 
-    @Value("${custom-keycloak.validate_token_url}")
-    private String validateTokenUrl;
+    @Value("${custom-keycloak.user_role}")
+    private String rolename;
 
+    @Value("${custom-keycloak.uesr_role_id}")
+    private String roleId;
+
+    @Value("${custom-keycloak.client_uuid}")
+    private String clientUUID;
 }

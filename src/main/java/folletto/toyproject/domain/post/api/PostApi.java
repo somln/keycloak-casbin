@@ -40,51 +40,49 @@ public class PostApi {
     @RolesAllowed({"USER"})
     public ResponseDto<Void> createPost(
             @RequestBody PostRequest postRequest) {
-        KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userUUID = principal.getName();
-        postService.createPost(postRequest, userUUID);
+        postService.createPost(postRequest);
         return ResponseDto.created();
     }
 
     @PutMapping("/{postId}")
+    @RolesAllowed({"USER"})
     ResponseDto<Void> updatePost(
             @PathVariable Long postId,
-            @RequestBody PostRequest postRequest,
-            @RequestHeader("Authorization") String token) {
-        postService.updatePost(postId, postRequest, token);
+            @RequestBody PostRequest postRequest) {
+        postService.updatePost(postId, postRequest);
         return ResponseDto.ok();
     }
 
     @DeleteMapping("/{postId}")
+    @RolesAllowed({"USER"})
     ResponseDto<Void> deletePost(
-            @PathVariable Long postId,
-            @RequestHeader("Authorization") String token) {
-        postService.deletePost(postId, token);
+            @PathVariable Long postId) {
+        postService.deletePost(postId);
         return ResponseDto.ok();
     }
 
     @GetMapping("/{postId}")
+    @RolesAllowed({"USER"})
     ResponseDto<PostResponse> findPost(
-            @PathVariable Long postId,
-            @RequestHeader("Authorization") String token) {
-        PostResponse postResponse = postService.findPost(postId, token);
+            @PathVariable Long postId) {
+        PostResponse postResponse = postService.findPost(postId);
         return ResponseDto.okWithData(postResponse);
     }
 
     @GetMapping()
+    @RolesAllowed({"USER"})
     ResponseDto<PostListResponse> findPosts(
             @RequestParam String sort,
-            Pageable pageable,
-            @RequestHeader("Authorization") String token
+            Pageable pageable
     ) {
-        return ResponseDto.okWithData(postService.findPosts(sort, pageable, token));
+        return ResponseDto.okWithData(postService.findPosts(sort, pageable));
     }
 
     @GetMapping("/search")
+    @RolesAllowed({"USER"})
     ResponseDto<List<PostResponse>> searchPosts(
-            @ModelAttribute("q") SearchRequest searchRequest,
-            @RequestHeader("Authorization") String token
+            @ModelAttribute("q") SearchRequest searchRequest
     ) {
-        return ResponseDto.okWithData(postService.searchPosts(searchRequest.q(), token));
+        return ResponseDto.okWithData(postService.searchPosts(searchRequest.q()));
     }
 }

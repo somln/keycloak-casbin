@@ -23,11 +23,13 @@ keycloak:
   bearer-only: true
 
 custom-keycloak:
-  client_secret: ${KEYCLOAK_CLIENT_SECRET}
+  client_uuid: ${KEYCLOAK_CLIENT_UUID}
+  user_role: ${KEYCLOAK_USER_ROLE}
+  uesr_role_id: ${KEYCLOAK_USER_ROLE_ID}
   grant_type: ${KEYCLOAK_GRANT_TYPE}
   admin_username: ${KEYCLOAK_ADMIN_USERNAME}
   admin_password: ${KEYCLOAK_ADMIN_PASSWORD}
   get_token_url: ${KEYCLOAK_GET_TOKEN_URL}
-  validate_token_url: ${KEYCLOAK_VALIDATE_TOKEN_URL}
   signup_url: ${KEYCLOAK_SIGNUP_URL}
+
 

@@ -14,6 +14,8 @@ import folletto.toyproject.global.keycloak.KeyCloakClient;
 
 import java.util.List;
 
+import org.keycloak.KeycloakPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +37,9 @@ public class CommentService {
 
     @Transactional
     public void createComment(Long postId, CommentRequest commentRequest, String token) {
-        UserEntity user = authenticateUser(token);
+        KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userUUID = principal.getName();
+        UserEntity user = findUserByUUID(userUUID);
         findPostById(postId);
         commentRepository.save(CommentEntity.of(commentRequest.content(), user.getUserId(), postId));
     }
@@ -68,7 +72,9 @@ public class CommentService {
     }
 
     private UserEntity authenticateUser(String token) {
-        String userUUID = keyCloakClient.validateToken(token);
+        KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userUUID = principal.getName();
+        UserEntity user = findUserByUUID(userUUID);
         return findUserByUUID(userUUID);
     }
 

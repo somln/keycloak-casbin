@@ -3,11 +3,11 @@ package folletto.toyproject.domain.user.service;
 import static folletto.toyproject.global.exception.ErrorCode.EMAIL_ALREADY_EXISTS;
 import static folletto.toyproject.global.exception.ErrorCode.USERNAME_ALREADY_EXISTS;
 
-import folletto.toyproject.domain.user.dto.KeycloakSignupRequest;
 import folletto.toyproject.domain.user.dto.SignupRequest;
 import folletto.toyproject.domain.user.repository.UserRepository;
 import folletto.toyproject.global.exception.ApplicationException;
 import folletto.toyproject.global.keycloak.KeyCloakClient;
+import folletto.toyproject.global.keycloak.KeycloakSignupRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,6 +24,7 @@ public class UserService {
     public void signUp(SignupRequest signupRequest) {
         validateDuplicateUser(signupRequest);
         String userUUID = keyCloakClient.signup(KeycloakSignupRequest.from(signupRequest));
+        keyCloakClient.mappingRole(userUUID);
         userRepository.save(signupRequest.toEntity(userUUID));
     }
 
