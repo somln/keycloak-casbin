@@ -46,7 +46,6 @@ public class KeyCloakClient {
         Map<String, String> formParams = new HashMap<>();
         formParams.put("grant_type", keycloakProperties.getGrantType());
         formParams.put("client_id", keycloakProperties.getClientId());
-        formParams.put("client_secret", keycloakProperties.getClientSecret());
         formParams.put("username", keycloakProperties.getUsername());
         formParams.put("password", keycloakProperties.getPassword());
         return formParams;

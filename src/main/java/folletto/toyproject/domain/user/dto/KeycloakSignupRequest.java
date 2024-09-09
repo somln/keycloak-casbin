@@ -2,11 +2,13 @@ package folletto.toyproject.domain.user.dto;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public record KeycloakSignupRequest(
         String username,
         String email,
         List<CredentialRepresentation> credentials,
+        Map<String, List<String>> clientRoles,
         boolean enabled
 ) {
 
@@ -14,7 +16,9 @@ public record KeycloakSignupRequest(
         return new KeycloakSignupRequest(
                 signupRequest.username(),
                 signupRequest.email(),
-                Collections.singletonList(CredentialRepresentation.from(signupRequest.password())),
-                true);
+                List.of(new CredentialRepresentation("password", signupRequest.password(), false)),
+                Map.of("main_client", List.of("USER")),
+                true
+        );
     }
 }

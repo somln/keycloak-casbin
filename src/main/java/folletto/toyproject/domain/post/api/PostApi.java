@@ -8,10 +8,15 @@ import folletto.toyproject.global.dto.ResponseDto;
 import folletto.toyproject.global.dto.SearchRequest;
 
 import java.util.List;
+import javax.annotation.security.RolesAllowed;
 import javax.naming.directory.SearchResult;
 
 import lombok.RequiredArgsConstructor;
+import org.keycloak.KeycloakPrincipal;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -32,10 +37,12 @@ public class PostApi {
     private final PostService postService;
 
     @PostMapping()
+    @RolesAllowed({"USER"})
     public ResponseDto<Void> createPost(
-            @RequestBody PostRequest postRequest,
-            @RequestHeader("Authorization") String token) {
-        postService.createPost(postRequest, token);
+            @RequestBody PostRequest postRequest) {
+        KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userUUID = principal.getName();
+        postService.createPost(postRequest, userUUID);
         return ResponseDto.created();
     }
 

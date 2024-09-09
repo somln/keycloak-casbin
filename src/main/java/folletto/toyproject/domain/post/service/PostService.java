@@ -14,8 +14,10 @@ import folletto.toyproject.global.keycloak.KeyCloakClient;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import org.keycloak.KeycloakPrincipal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +30,9 @@ public class PostService {
     private final KeyCloakClient keyCloakClient;
 
     @Transactional
-    public void createPost(PostRequest createPostRequest, String token) {
-        UserEntity user = authenticateUser(token);
+    public void createPost(PostRequest createPostRequest, String userUUID) throws ApplicationException {
+        // 또는 userDetails에 따라 다른 방법으로 UUID를 추출
+        UserEntity user = findUserByUUID(userUUID);
         postRepository.save(PostEntity.of(createPostRequest, user.getUserId()));
     }
 

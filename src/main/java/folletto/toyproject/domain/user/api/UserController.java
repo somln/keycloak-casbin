@@ -19,7 +19,7 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseDto<Void> signup(@RequestBody @Valid SignupRequest signupDto) {
         userService.signUp(signupDto);
-        return ResponseDto.ok();
+        return ResponseDto.created();
     }
 
 }
