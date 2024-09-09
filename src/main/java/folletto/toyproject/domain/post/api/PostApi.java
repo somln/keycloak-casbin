@@ -32,12 +32,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/posts")
 @RestController
 @RequiredArgsConstructor
+@RolesAllowed({"USER"})
 public class PostApi {
 
     private final PostService postService;
 
     @PostMapping()
-    @RolesAllowed({"USER"})
     public ResponseDto<Void> createPost(
             @RequestBody PostRequest postRequest) {
         postService.createPost(postRequest);
@@ -45,7 +45,6 @@ public class PostApi {
     }
 
     @PutMapping("/{postId}")
-    @RolesAllowed({"USER"})
     ResponseDto<Void> updatePost(
             @PathVariable Long postId,
             @RequestBody PostRequest postRequest) {
@@ -54,7 +53,6 @@ public class PostApi {
     }
 
     @DeleteMapping("/{postId}")
-    @RolesAllowed({"USER"})
     ResponseDto<Void> deletePost(
             @PathVariable Long postId) {
         postService.deletePost(postId);
@@ -62,7 +60,6 @@ public class PostApi {
     }
 
     @GetMapping("/{postId}")
-    @RolesAllowed({"USER"})
     ResponseDto<PostResponse> findPost(
             @PathVariable Long postId) {
         PostResponse postResponse = postService.findPost(postId);
@@ -70,7 +67,6 @@ public class PostApi {
     }
 
     @GetMapping()
-    @RolesAllowed({"USER"})
     ResponseDto<PostListResponse> findPosts(
             @RequestParam String sort,
             Pageable pageable
@@ -79,7 +75,6 @@ public class PostApi {
     }
 
     @GetMapping("/search")
-    @RolesAllowed({"USER"})
     ResponseDto<List<PostResponse>> searchPosts(
             @ModelAttribute("q") SearchRequest searchRequest
     ) {

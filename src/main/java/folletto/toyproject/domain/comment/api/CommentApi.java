@@ -6,6 +6,7 @@ import folletto.toyproject.domain.comment.service.CommentService;
 import folletto.toyproject.global.dto.ResponseDto;
 
 import java.util.List;
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 @RestController
 @RequiredArgsConstructor
+@RolesAllowed({"USER"})
 public class CommentApi {
 
     private final CommentService commentService;
@@ -29,35 +31,30 @@ public class CommentApi {
     @PostMapping("/posts/{postId}/comments")
     public ResponseDto<Void> createComment(
             @PathVariable Long postId,
-            @Valid @RequestBody CommentRequest commentRequest,
-            @RequestHeader("Authorization") String token) {
-        commentService.createComment(postId, commentRequest, token);
+            @Valid @RequestBody CommentRequest commentRequest) {
+        commentService.createComment(postId, commentRequest);
         return ResponseDto.created();
     }
 
     @PutMapping("/comments/{commentId}")
     public ResponseDto<Void> updateComment(
             @PathVariable Long commentId,
-            @Valid @RequestBody CommentRequest commentRequest,
-            @RequestHeader("Authorization") String token) {
-        commentService.updateComment(commentId, commentRequest, token);
+            @Valid @RequestBody CommentRequest commentRequest) {
+        commentService.updateComment(commentId, commentRequest);
         return ResponseDto.ok();
     }
 
     @DeleteMapping("/comments/{commentId}")
     public ResponseDto<Void> deleteComment(
-            @PathVariable Long commentId,
-            @RequestHeader("Authorization") String token) {
-        commentService.deleteComment(commentId, token);
+            @PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
         return ResponseDto.ok();
     }
 
     @GetMapping("/posts/{postId}/comments")
     public ResponseDto<List<CommentResponse>> findComments(
-            @PathVariable Long postId,
-            @RequestHeader("Authorization") String token) {
-        List<CommentResponse> comments = commentService.findComments(postId, token);
+            @PathVariable Long postId) {
+        List<CommentResponse> comments = commentService.findComments(postId);
         return ResponseDto.okWithData(comments);
     }
-
 }

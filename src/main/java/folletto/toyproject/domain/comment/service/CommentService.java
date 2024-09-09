@@ -10,58 +10,47 @@ import folletto.toyproject.domain.user.entity.UserEntity;
 import folletto.toyproject.domain.user.repository.UserRepository;
 import folletto.toyproject.global.exception.ApplicationException;
 import folletto.toyproject.global.exception.ErrorCode;
-import folletto.toyproject.global.keycloak.KeyCloakClient;
 
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import org.keycloak.KeycloakPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final KeyCloakClient keyCloakClient;
-
-    public CommentService(CommentRepository commentRepository, PostRepository postRepository,
-                          UserRepository userRepository, KeyCloakClient keyCloakClient) {
-        this.commentRepository = commentRepository;
-        this.postRepository = postRepository;
-        this.userRepository = userRepository;
-        this.keyCloakClient = keyCloakClient;
-    }
 
     @Transactional
-    public void createComment(Long postId, CommentRequest commentRequest, String token) {
-        KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userUUID = principal.getName();
-        UserEntity user = findUserByUUID(userUUID);
+    public void createComment(Long postId, CommentRequest commentRequest) {
+        UserEntity user = findCurrentUser();
         findPostById(postId);
         commentRepository.save(CommentEntity.of(commentRequest.content(), user.getUserId(), postId));
     }
 
     @Transactional
-    public void updateComment(Long commentId, CommentRequest commentRequest, String token) {
-        UserEntity user = authenticateUser(token);
+    public void updateComment(Long commentId, CommentRequest commentRequest) {
         CommentEntity comment = findCommentById(commentId);
+        UserEntity user = findCurrentUser();
         validateAuthor(user, comment);
         comment.update(commentRequest.content());
     }
 
     @Transactional
-    public void deleteComment(Long commentId, String token) {
-        UserEntity user = authenticateUser(token);
+    public void deleteComment(Long commentId) {
         CommentEntity comment = findCommentById(commentId);
+        UserEntity user = findCurrentUser();
         validateAuthor(user, comment);
         commentRepository.delete(comment);
     }
 
-    public List<CommentResponse> findComments(Long postId, String token) {
-        authenticateUser(token);
+    public List<CommentResponse> findComments(Long postId) {
         List<CommentEntity> comments = commentRepository.findAllByPostIdOrderByCreatedAtAsc(postId);
         return comments.stream()
                 .map(comment -> {
@@ -71,10 +60,9 @@ public class CommentService {
                 .toList();
     }
 
-    private UserEntity authenticateUser(String token) {
+    private UserEntity findCurrentUser() {
         KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userUUID = principal.getName();
-        UserEntity user = findUserByUUID(userUUID);
         return findUserByUUID(userUUID);
     }
 

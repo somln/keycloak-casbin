@@ -27,19 +27,16 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final KeyCloakClient keyCloakClient;
 
     @Transactional
     public void createPost(PostRequest createPostRequest) {
-        String userUUID = getCurrentUserUUID();
-        UserEntity user = findUserByUUID(userUUID);
+        UserEntity user = findCurrentUser();
         postRepository.save(PostEntity.of(createPostRequest, user.getUserId()));
     }
 
     @Transactional
     public void updatePost(Long postId, PostRequest postRequest) {
-        String userUUID = getCurrentUserUUID();
-        UserEntity user = findUserByUUID(userUUID);
+        UserEntity user = findCurrentUser();
         PostEntity post = findPostById(postId);
         validateAuthor(user, post);
         post.update(postRequest);
@@ -47,8 +44,7 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long postId) {
-        String userUUID = getCurrentUserUUID();
-        UserEntity user = findUserByUUID(userUUID);
+        UserEntity user = findCurrentUser();
         PostEntity post = findPostById(postId);
         validateAuthor(user, post);
         postRepository.delete(post);
@@ -61,8 +57,6 @@ public class PostService {
     }
 
     public PostListResponse findPosts(String sort, Pageable pageable) {
-        String userUUID = getCurrentUserUUID();
-        UserEntity user = findUserByUUID(userUUID);
         Page<PostEntity> posts = fetchSortedPosts(sort, pageable);
         List<PostResponse> postResponses = posts.getContent().stream()
                 .map(post -> {
@@ -75,14 +69,16 @@ public class PostService {
 
     public List<PostResponse> searchPosts(String keyword) {
         List<PostEntity> posts = postRepository.searchByTitleOrContent(keyword);
-        String userUUID = getCurrentUserUUID();
-        UserEntity user = findUserByUUID(userUUID);
-        return posts.stream().map(post -> PostResponse.from(post, user)).toList();
+        return posts.stream().map(post -> {
+            UserEntity userEntity = findUserById(post.getUserId());
+            return PostResponse.from(post, userEntity);
+        }).toList();
     }
 
-    private String getCurrentUserUUID() {
+    private UserEntity findCurrentUser() {
         KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return principal.getName();
+        String userUUID = principal.getName();
+        return findUserByUUID(userUUID);
     }
 
     private UserEntity findUserByUUID(String userUUID) {
