@@ -27,9 +27,54 @@ public class PostService {
 
     @Transactional
     public void createPost(PostRequest createPostRequest, String token) {
-        String userUUID = keyCloakClient.validateToken(token);
-        UserEntity user = findUserByUUID(userUUID);
+        UserEntity user = authenticateUser(token);
         postRepository.save(PostEntity.of(createPostRequest, user.getUserId()));
+    }
+
+    @Transactional
+    public void updatePost(Long postId, PostRequest postRequest, String token) {
+        UserEntity user = authenticateUser(token);
+        PostEntity post = findPostById(postId);
+        validateAuthor(user, post);
+        post.update(postRequest);
+    }
+
+    @Transactional
+    public void deletePost(Long postId, String token) {
+        UserEntity user = authenticateUser(token);
+        PostEntity post = findPostById(postId);
+        validateAuthor(user, post);
+        postRepository.delete(post);
+    }
+
+    public PostResponse findPost(Long postId, String token) {
+        authenticateUser(token);
+        PostEntity post = findPostById(postId);
+        UserEntity user = findUserById(post.getUserId());
+        return PostResponse.from(findPostById(postId), user);
+    }
+
+    public PostListResponse findPosts(String sort, Pageable pageable, String token) {
+        authenticateUser(token);
+        Page<PostEntity> posts = fetchSortedPosts(sort, pageable);
+        List<PostResponse> postResponses = posts.getContent().stream()
+                .map(post -> {
+                    UserEntity user = findUserById(post.getUserId());
+                    return PostResponse.from(post, user);
+                })
+                .toList();
+        return PostListResponse.from(postResponses, posts);
+    }
+
+    public List<PostResponse> searchPosts(String keyword, String token) {
+        UserEntity user = authenticateUser(token);
+        List<PostEntity> posts = postRepository.searchByTitleOrContent(keyword);
+        return posts.stream().map(post -> PostResponse.from(post, user)).toList();
+    }
+
+    private UserEntity authenticateUser(String token) {
+        String userUUID = keyCloakClient.validateToken(token);
+        return findUserByUUID(userUUID);
     }
 
     private UserEntity findUserByUUID(String userUUID) {
@@ -37,60 +82,28 @@ public class PostService {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
     }
 
-    @Transactional
-    public void updatePost(Long postId, PostRequest postRequest, String token) {
-        String userUUID = keyCloakClient.validateToken(token);
-        UserEntity user = findUserByUUID(userUUID);
-        PostEntity post = findPostById(postId);
-        validateAuthor(user, post);
-        post.update(postRequest);
+    private UserEntity findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
     }
+
 
     private PostEntity findPostById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.POST_NOT_FOUND));
     }
 
-    public void validateAuthor(UserEntity user, PostEntity post) {
+    private void validateAuthor(UserEntity user, PostEntity post) {
         if (!post.getUserId().equals(user.getUserId())) {
             throw new ApplicationException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
     }
 
-    @Transactional
-    public void deletePost(Long postId, String token) {
-        String userUUID = keyCloakClient.validateToken(token);
-        UserEntity user = findUserByUUID(userUUID);
-        PostEntity post = findPostById(postId);
-        validateAuthor(user, post);
-        postRepository.delete(post);
-    }
-
-    public PostResponse findPost(Long postId, String token) {
-        String userUUID = keyCloakClient.validateToken(token);
-        UserEntity user = findUserByUUID(userUUID);
-        return PostResponse.from(findPostById(postId), user);
-    }
-
-    public PostListResponse findPosts(String sort, Pageable pageable, String token) {
-        String userUUID = keyCloakClient.validateToken(token);
-        Page<PostEntity> posts;
+    private Page<PostEntity> fetchSortedPosts(String sort, Pageable pageable) {
         if (SortType.fromDescription(sort).equals(SortType.DESC)) {
-            posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
+            return postRepository.findAllByOrderByCreatedAtDesc(pageable);
         } else {
-            posts = postRepository.findAllByOrderByCreatedAtAsc(pageable);
+            return postRepository.findAllByOrderByCreatedAtAsc(pageable);
         }
-        UserEntity user = findUserByUUID(userUUID);
-        List<PostResponse> postResponses = posts.getContent().stream()
-                .map(post -> PostResponse.from(post, user)).
-                toList();
-        return PostListResponse.from(postResponses, posts);
-    }
-
-    public List<PostResponse> searchPosts(String keyword, String token) {
-        String userUUID = keyCloakClient.validateToken(token);
-        UserEntity user = findUserByUUID(userUUID);
-        List<PostEntity> posts = postRepository.searchByTitleOrContent(keyword);
-        return posts.stream().map(post -> PostResponse.from(post, user)).toList();
     }
 }

@@ -38,7 +38,7 @@ public class KeyCloakClient {
             String responseBody = httpClient.postForm(buildUrl(keycloakProperties.getGetTokenUrl()), formParams).body().string();
             return extractTokenFromResponse(responseBody);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to get token from KeyCloak", e);
+            throw new ApplicationException(ErrorCode.TOKEN_REQUEST_FAILED);
         }
     }
 
@@ -59,16 +59,16 @@ public class KeyCloakClient {
 
     public String signup(KeycloakSignupRequest signupDto) {
         try {
-            Response response = httpClient.post(buildUrl(keycloakProperties.getSignupUrl()), token,
-                    signupDto);
-
-            String location = response.header("Location");
-
-            String userUUID = location.substring(location.lastIndexOf("/") + 1);
-            return userUUID;
+            Response response = httpClient.post(buildUrl(keycloakProperties.getSignupUrl()), token, signupDto);
+            return extractUserUUIDFromResponse(response);
         } catch (IOException e) {
             throw new ApplicationException(ErrorCode.SIGNUP_FAILED);
         }
+    }
+
+    private String extractUserUUIDFromResponse(Response response) {
+        String location = response.header("Location");
+        return location != null ? location.substring(location.lastIndexOf("/") + 1) : null;
     }
 
     public String validateToken(String token) {
@@ -78,7 +78,7 @@ public class KeyCloakClient {
             String responseBody = httpClient.postForm(buildUrl(keycloakProperties.getValidateTokenUrl()), formParams).body().string();
             return parseTokenResponse(responseBody);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to validate token with Keycloak", e);
+            throw new ApplicationException(ErrorCode.SESSION_INVALID);
         }
     }
 
@@ -93,15 +93,28 @@ public class KeyCloakClient {
     private String parseTokenResponse(String responseBody) {
         JsonObject jsonObject = gson.fromJson(responseBody, JsonObject.class);
 
-        if (jsonObject.get("active").getAsBoolean()) {
-            if(jsonObject.get("azp").getAsString().equals(keycloakProperties.getClientId())) {
-                return jsonObject.get("sub").getAsString();
-            } else {
-                throw new ApplicationException(ErrorCode.SESSION_INVALID);
-            }
-        } else {
+        if (!isTokenActive(jsonObject)) {
             throw new ApplicationException(ErrorCode.SESSION_INVALID);
         }
+
+        validateAuthorizedParty(jsonObject);
+
+        return extractSubject(jsonObject);
+    }
+
+    private boolean isTokenActive(JsonObject jsonObject) {
+        return jsonObject.get("active").getAsBoolean();
+    }
+
+    private void validateAuthorizedParty(JsonObject jsonObject) {
+        String authorizedParty = jsonObject.get("azp").getAsString();
+        if (!authorizedParty.equals(keycloakProperties.getClientId())) {
+            throw new ApplicationException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+    }
+
+    private String extractSubject(JsonObject jsonObject) {
+        return jsonObject.get("sub").getAsString();
     }
 
     private String buildUrl(String endpoint) {

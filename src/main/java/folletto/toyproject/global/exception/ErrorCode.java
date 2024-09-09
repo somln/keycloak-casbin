@@ -16,7 +16,8 @@ public enum ErrorCode {
     POST_NOT_FOUND(NOT_FOUND, "게시글을 찾을 수 없습니다."),
     UNAUTHORIZED_ACCESS(FORBIDDEN, "요청에 대한 권한이 없습니다."),
     INVALID_SORT_TYPE(BAD_REQUEST, "정렬 타입이 올바르지 않습니다."),
-    COMMENT_NOT_FOUND(NOT_FOUND, "댓글을 찾을 수 없습니다.");
+    COMMENT_NOT_FOUND(NOT_FOUND, "댓글을 찾을 수 없습니다."),
+    TOKEN_REQUEST_FAILED(FORBIDDEN, "관리자 토큰을 요청하는 중 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

@@ -44,7 +44,7 @@ public class CommentApi {
     }
 
     @DeleteMapping("/comments/{commentId}")
-    public ResponseDto<Void>  updateComment(
+    public ResponseDto<Void>  deleteComment(
             @PathVariable Long commentId,
             @RequestHeader("Authorization") String token) {
         commentService.deleteComment(commentId, token);
