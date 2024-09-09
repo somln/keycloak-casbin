@@ -6,8 +6,10 @@ import folletto.toyproject.domain.post.dto.PostResponse;
 import folletto.toyproject.domain.post.service.PostService;
 import folletto.toyproject.global.dto.ResponseDto;
 import folletto.toyproject.global.dto.SearchRequest;
+
 import java.util.List;
 import javax.naming.directory.SearchResult;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;

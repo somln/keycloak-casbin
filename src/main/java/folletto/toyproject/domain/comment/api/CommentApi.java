@@ -4,12 +4,13 @@ import folletto.toyproject.domain.comment.dto.CommentRequest;
 import folletto.toyproject.domain.comment.dto.CommentResponse;
 import folletto.toyproject.domain.comment.service.CommentService;
 import folletto.toyproject.global.dto.ResponseDto;
+
 import java.util.List;
 import javax.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,7 +36,7 @@ public class CommentApi {
     }
 
     @PutMapping("/comments/{commentId}")
-    public ResponseDto<Void>  updateComment(
+    public ResponseDto<Void> updateComment(
             @PathVariable Long commentId,
             @Valid @RequestBody CommentRequest commentRequest,
             @RequestHeader("Authorization") String token) {
@@ -44,7 +45,7 @@ public class CommentApi {
     }
 
     @DeleteMapping("/comments/{commentId}")
-    public ResponseDto<Void>  deleteComment(
+    public ResponseDto<Void> deleteComment(
             @PathVariable Long commentId,
             @RequestHeader("Authorization") String token) {
         commentService.deleteComment(commentId, token);

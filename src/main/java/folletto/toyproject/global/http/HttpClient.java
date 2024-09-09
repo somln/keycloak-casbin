@@ -1,8 +1,10 @@
 package folletto.toyproject.global.http;
 
 import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.util.Map;
+
 import okhttp3.*;
 import okhttp3.OkHttpClient;
 import org.checkerframework.checker.units.qual.C;

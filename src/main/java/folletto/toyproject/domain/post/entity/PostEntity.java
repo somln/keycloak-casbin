@@ -2,11 +2,13 @@ package folletto.toyproject.domain.post.entity;
 
 import folletto.toyproject.domain.post.dto.PostRequest;
 import folletto.toyproject.global.entity.BaseTimeEntity;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,7 +37,7 @@ public class PostEntity extends BaseTimeEntity {
         this.title = title;
         this.content = content;
         this.userId = userId;
-        this.isUpdated =  isUpdated;
+        this.isUpdated = isUpdated;
     }
 
     public static PostEntity of(PostRequest postRequest, Long userId) {

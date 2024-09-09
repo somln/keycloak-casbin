@@ -1,11 +1,13 @@
 package folletto.toyproject.domain.comment.entity;
 
 import folletto.toyproject.global.entity.BaseTimeEntity;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,7 +32,7 @@ public class CommentEntity extends BaseTimeEntity {
 
 
     @Builder
-    public CommentEntity(Long commentId, String content, boolean isUpdated,  Long userId, Long postId) {
+    public CommentEntity(Long commentId, String content, boolean isUpdated, Long userId, Long postId) {
         this.commentId = commentId;
         this.content = content;
         this.isUpdated = isUpdated;

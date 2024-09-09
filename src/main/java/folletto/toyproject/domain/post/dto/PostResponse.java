@@ -3,9 +3,10 @@ package folletto.toyproject.domain.post.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import folletto.toyproject.domain.post.entity.PostEntity;
 import folletto.toyproject.domain.user.entity.UserEntity;
+
 import java.time.LocalDateTime;
 
-public record PostResponse (
+public record PostResponse(
         Long postId,
         String title,
         String content,
@@ -16,8 +17,8 @@ public record PostResponse (
         boolean isUpdated,
         Long userId,
         String username
-){
-    public static PostResponse from(PostEntity post, UserEntity user){
+) {
+    public static PostResponse from(PostEntity post, UserEntity user) {
         return new PostResponse(
                 post.getPostId(),
                 post.getTitle(),

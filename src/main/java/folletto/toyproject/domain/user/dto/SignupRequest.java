@@ -1,6 +1,7 @@
 package folletto.toyproject.domain.user.dto;
 
 import folletto.toyproject.domain.user.entity.UserEntity;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
