@@ -11,6 +11,7 @@ import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.naming.directory.SearchResult;
 
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.KeycloakPrincipal;
 import org.springframework.data.domain.Pageable;
@@ -32,27 +33,29 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/posts")
 @RestController
 @RequiredArgsConstructor
-@RolesAllowed({"USER"})
 public class PostApi {
 
     private final PostService postService;
 
     @PostMapping()
+    @RolesAllowed({"USER"})
     public ResponseDto<Void> createPost(
-            @RequestBody PostRequest postRequest) {
+            @RequestBody @Valid PostRequest postRequest) {
         postService.createPost(postRequest);
         return ResponseDto.created();
     }
 
     @PutMapping("/{postId}")
+    @RolesAllowed({"USER"})
     ResponseDto<Void> updatePost(
             @PathVariable Long postId,
-            @RequestBody PostRequest postRequest) {
+            @RequestBody @Valid PostRequest postRequest) {
         postService.updatePost(postId, postRequest);
         return ResponseDto.ok();
     }
 
     @DeleteMapping("/{postId}")
+    @RolesAllowed({"USER"})
     ResponseDto<Void> deletePost(
             @PathVariable Long postId) {
         postService.deletePost(postId);
@@ -60,6 +63,7 @@ public class PostApi {
     }
 
     @GetMapping("/{postId}")
+    @RolesAllowed({"USER"})
     ResponseDto<PostResponse> findPost(
             @PathVariable Long postId) {
         PostResponse postResponse = postService.findPost(postId);
@@ -75,6 +79,7 @@ public class PostApi {
     }
 
     @GetMapping("/search")
+    @RolesAllowed({"USER"})
     ResponseDto<List<PostResponse>> searchPosts(
             @ModelAttribute("q") SearchRequest searchRequest
     ) {

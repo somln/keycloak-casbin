@@ -1,7 +1,6 @@
 package folletto.toyproject.global.keycloak;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import folletto.toyproject.global.exception.ApplicationException;
 import folletto.toyproject.global.exception.ErrorCode;
 import folletto.toyproject.global.http.HttpClient;
@@ -58,6 +57,7 @@ public class KeyCloakClient {
 
     public String signup(KeycloakSignupRequest signupDto) {
         try {
+            String token = getNewAdminToken();
             Response response = httpClient.post(buildUrl(keycloakProperties.getSignupUrl()), token, signupDto);
             return extractUserUUIDFromResponse(response);
         } catch (IOException e) {

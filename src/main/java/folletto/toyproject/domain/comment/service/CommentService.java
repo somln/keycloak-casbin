@@ -51,7 +51,7 @@ public class CommentService {
     }
 
     public List<CommentResponse> findComments(Long postId) {
-        List<CommentEntity> comments = commentRepository.findAllByPostIdOrderByCreatedAtAsc(postId);
+        List<CommentEntity> comments = commentRepository.findAllByPostIdOrderByCreatedAtDesc(postId);
         return comments.stream()
                 .map(comment -> {
                     UserEntity user = findUserById(comment.getUserId());

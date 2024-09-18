@@ -4,10 +4,15 @@ import static folletto.toyproject.global.exception.ErrorCode.EMAIL_ALREADY_EXIST
 import static folletto.toyproject.global.exception.ErrorCode.USERNAME_ALREADY_EXISTS;
 
 import folletto.toyproject.domain.user.dto.SignupRequest;
+import folletto.toyproject.domain.user.dto.UserResponse;
+import folletto.toyproject.domain.user.entity.UserEntity;
 import folletto.toyproject.domain.user.repository.UserRepository;
 import folletto.toyproject.global.exception.ApplicationException;
+import folletto.toyproject.global.exception.ErrorCode;
 import folletto.toyproject.global.keycloak.KeyCloakClient;
 import folletto.toyproject.global.keycloak.KeycloakSignupRequest;
+import org.keycloak.KeycloakPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,4 +49,21 @@ public class UserService {
             throw new ApplicationException(EMAIL_ALREADY_EXISTS);
         }
     }
+
+    public UserResponse findMyInfo() {
+        UserEntity user = findCurrentUser();
+        return UserResponse.from(user);
+    }
+
+    private UserEntity findCurrentUser() {
+        KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userUUID = principal.getName();
+        return findUserByUUID(userUUID);
+    }
+
+    private UserEntity findUserByUUID(String userUUID) {
+        return userRepository.findByUserUUID(userUUID)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
+    }
+
 }
