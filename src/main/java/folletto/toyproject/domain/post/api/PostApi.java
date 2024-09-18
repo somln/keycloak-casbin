@@ -79,7 +79,6 @@ public class PostApi {
     }
 
     @GetMapping("/search")
-    @RolesAllowed({"USER"})
     ResponseDto<List<PostResponse>> searchPosts(
             @ModelAttribute("q") SearchRequest searchRequest
     ) {
