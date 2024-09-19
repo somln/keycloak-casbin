@@ -1,5 +1,6 @@
 package folletto.toyproject.domain.post.service;
 
+import folletto.toyproject.domain.comment.repository.CommentRepository;
 import folletto.toyproject.domain.post.dto.PostListResponse;
 import folletto.toyproject.domain.post.dto.PostRequest;
 import folletto.toyproject.domain.post.dto.PostResponse;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
     private final UserRepository userRepository;
 
     @Transactional
@@ -48,6 +50,7 @@ public class PostService {
         PostEntity post = findPostById(postId);
         validateAuthor(user, post);
         postRepository.delete(post);
+        commentRepository.deleteAllByPostId(postId);
     }
 
     public PostResponse findPost(Long postId) {

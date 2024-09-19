@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 
     List<CommentEntity> findAllByPostIdOrderByCreatedAtDesc(Long postId);
+
+    void deleteAllByPostId(Long postId);
 }
