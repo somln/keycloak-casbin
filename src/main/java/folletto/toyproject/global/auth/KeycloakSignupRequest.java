@@ -1,4 +1,4 @@
-package folletto.toyproject.global.keycloak;
+package folletto.toyproject.global.auth;
 
 import folletto.toyproject.domain.user.dto.CredentialRepresentation;
 import folletto.toyproject.domain.user.dto.SignupRequest;

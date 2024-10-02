@@ -31,7 +31,8 @@ public class CommentApi {
     @PostMapping("/posts/{postId}/comments")
     public ResponseDto<Void> createComment(
             @PathVariable Long postId,
-            @Valid @RequestBody CommentRequest commentRequest) {
+            @Valid @RequestBody CommentRequest commentRequest
+    ) {
         commentService.createComment(postId, commentRequest);
         return ResponseDto.created();
     }

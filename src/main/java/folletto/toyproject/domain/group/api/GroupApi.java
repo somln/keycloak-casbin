@@ -3,24 +3,28 @@ package folletto.toyproject.domain.group.api;
 import folletto.toyproject.domain.group.dto.GroupRequest;
 import folletto.toyproject.domain.group.dto.GroupResponse;
 import folletto.toyproject.domain.group.service.GroupService;
+import folletto.toyproject.global.auth.AuthorizationVerifier;
 import folletto.toyproject.global.dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/groups")
-public class GroupController {
+public class GroupApi {
 
     private final GroupService groupService;
 
-
     @PostMapping()
     @RolesAllowed({"USER"})
-    public ResponseDto<Void> createGroup(@RequestBody GroupRequest groupRequest) {
+    public ResponseDto<Void> createGroup(
+            @RequestBody GroupRequest groupRequest,
+            HttpServletRequest servletRequest
+    ) {
         groupService.createGroup(groupRequest);
         return ResponseDto.created();
     }

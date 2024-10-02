@@ -10,7 +10,6 @@ import folletto.toyproject.domain.user.entity.UserEntity;
 import folletto.toyproject.domain.user.repository.UserRepository;
 import folletto.toyproject.global.exception.ApplicationException;
 import folletto.toyproject.global.exception.ErrorCode;
-import folletto.toyproject.global.keycloak.KeyCloakClient;
 
 import java.util.List;
 
@@ -31,9 +30,8 @@ public class PostService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void createPost(Long groupId, PostRequest createPostRequest) {
-        UserEntity user = findCurrentUser();
-        postRepository.save(PostEntity.of(createPostRequest, user.getUserId(), groupId));
+    public void createPost(Long groupId, PostRequest createPostRequest, UserEntity currentUser) {
+        postRepository.save(PostEntity.of(createPostRequest, currentUser.getUserId(), groupId));
     }
 
     @Transactional

@@ -45,6 +45,7 @@ public class UserEntity {
                 .username(signupRequest.username())
                 .name(signupRequest.username())
                 .email(signupRequest.email())
+                .groupId(signupRequest.groupId())
                 .build();
     }
 

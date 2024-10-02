@@ -1,4 +1,4 @@
-package folletto.toyproject.global.keycloak;
+package folletto.toyproject.global.auth;
 
 public record KeycloakRole(
         String id,

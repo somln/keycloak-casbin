@@ -24,7 +24,14 @@ public class GroupService {
     private final PostRepository postRepository;
 
     public void createGroup(GroupRequest groupRequest) {
+        validateDuplicateGroup(groupRequest.groupName());
         groupRepository.save(GroupEntity.from(groupRequest));
+    }
+
+    private void validateDuplicateGroup(String groupName) {
+        if(groupRepository.existsByGroupName(groupName)){
+            throw new ApplicationException(ErrorCode.GROUP_NAME_ALREADY_EXISTS);
+        }
     }
 
     public void updateGroup(Long groupId, GroupRequest groupRequest) {

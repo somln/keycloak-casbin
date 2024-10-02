@@ -1,4 +1,4 @@
-package folletto.toyproject.global.keycloak;
+package folletto.toyproject.global.config;
 
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration;
@@ -23,7 +23,7 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 @KeycloakConfiguration
 @EnableGlobalMethodSecurity(jsr250Enabled = true)
 @Import(KeycloakSpringBootConfigResolver.class)
-public class WebSecurityConfiguration extends KeycloakWebSecurityConfigurerAdapter {
+public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) {

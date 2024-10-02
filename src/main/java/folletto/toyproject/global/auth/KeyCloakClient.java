@@ -1,4 +1,4 @@
-package folletto.toyproject.global.keycloak;
+package folletto.toyproject.global.auth;
 
 import com.google.gson.Gson;
 import folletto.toyproject.global.exception.ApplicationException;
