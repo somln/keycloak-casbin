@@ -14,13 +14,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-@Table(name = "post")
+@Table(name = "posts")
 public class PostEntity extends BaseTimeEntity {
 
     @Id
@@ -29,23 +28,27 @@ public class PostEntity extends BaseTimeEntity {
 
     private String title;
     private String content;
-    private Long userId;
     private boolean isUpdated;
 
+    private Long userId;
+    private Long groupId;
+
     @Builder
-    public PostEntity(String title, String content, Long userId, boolean isUpdated) {
-        this.title = title;
-        this.content = content;
+    public PostEntity(Long groupId, Long userId, boolean isUpdated, String content, String title) {
+        this.groupId = groupId;
         this.userId = userId;
         this.isUpdated = isUpdated;
+        this.content = content;
+        this.title = title;
     }
 
-    public static PostEntity of(PostRequest postRequest, Long userId) {
+    public static PostEntity of(PostRequest postRequest, Long userId, Long groupId) {
         return PostEntity.builder()
                 .title(postRequest.title())
                 .content(postRequest.content())
-                .userId(userId)
                 .isUpdated(false)
+                .userId(userId)
+                .groupId(groupId)
                 .build();
     }
 

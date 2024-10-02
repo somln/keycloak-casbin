@@ -17,7 +17,9 @@ public record SignupRequest(
         String name,
 
         @NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
-        String password
+        String password,
+
+        Long groupId
 
 ) {
 
@@ -27,6 +29,7 @@ public record SignupRequest(
                 .username(username)
                 .email(email)
                 .name(name)
+                .groupId(groupId)
                 .build();
     }
 }

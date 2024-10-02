@@ -37,11 +37,12 @@ public class PostApi {
 
     private final PostService postService;
 
-    @PostMapping()
+    @PostMapping("/{groupId}")
     @RolesAllowed({"USER"})
     public ResponseDto<Void> createPost(
+            @PathVariable Long groupId ,
             @RequestBody @Valid PostRequest postRequest) {
-        postService.createPost(postRequest);
+        postService.createPost(groupId, postRequest);
         return ResponseDto.created();
     }
 
@@ -70,18 +71,20 @@ public class PostApi {
         return ResponseDto.okWithData(postResponse);
     }
 
-    @GetMapping()
+    @GetMapping("/{groupId}")
     ResponseDto<PostListResponse> findPosts(
+            @PathVariable Long groupId,
             @RequestParam String sort,
             Pageable pageable
     ) {
-        return ResponseDto.okWithData(postService.findPosts(sort, pageable));
+        return ResponseDto.okWithData(postService.findPosts(groupId, sort, pageable));
     }
 
-    @GetMapping("/search")
+    @GetMapping("/{groupId}/search")
     ResponseDto<List<PostResponse>> searchPosts(
+            @PathVariable Long groupId,
             @ModelAttribute("q") SearchRequest searchRequest
     ) {
-        return ResponseDto.okWithData(postService.searchPosts(searchRequest.q()));
+        return ResponseDto.okWithData(postService.searchPosts(groupId, searchRequest.q()));
     }
 }

@@ -15,6 +15,8 @@ import org.keycloak.KeycloakPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -30,7 +32,7 @@ public class UserService {
         validateDuplicateUser(signupRequest);
         String userUUID = keyCloakClient.signup(KeycloakSignupRequest.from(signupRequest));
         keyCloakClient.mappingRole(userUUID);
-        userRepository.save(signupRequest.toEntity(userUUID));
+        userRepository.save(UserEntity.from(signupRequest, userUUID));
     }
 
     private void validateDuplicateUser(SignupRequest signupRequest) {
@@ -63,6 +65,21 @@ public class UserService {
 
     private UserEntity findUserByUUID(String userUUID) {
         return userRepository.findByUserUUID(userUUID)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public List<UserResponse> findUserByGroup(Long groupId) {
+        return userRepository.findByGroupId(groupId).stream()
+                .map(UserResponse::from).toList();
+    }
+
+    public UserResponse findUser(Long userId) {
+        UserEntity user = findUserById(userId);
+        return UserResponse.from(user);
+    }
+
+    private UserEntity findUserById(Long userId){
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
     }
 

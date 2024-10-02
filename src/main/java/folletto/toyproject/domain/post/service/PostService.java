@@ -31,9 +31,9 @@ public class PostService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void createPost(PostRequest createPostRequest) {
+    public void createPost(Long groupId, PostRequest createPostRequest) {
         UserEntity user = findCurrentUser();
-        postRepository.save(PostEntity.of(createPostRequest, user.getUserId()));
+        postRepository.save(PostEntity.of(createPostRequest, user.getUserId(), groupId));
     }
 
     @Transactional
@@ -59,8 +59,8 @@ public class PostService {
         return PostResponse.from(findPostById(postId), user);
     }
 
-    public PostListResponse findPosts(String sort, Pageable pageable) {
-        Page<PostEntity> posts = fetchSortedPosts(sort, pageable);
+    public PostListResponse findPosts(Long groupId, String sort, Pageable pageable) {
+        Page<PostEntity> posts = fetchSortedPosts(groupId, sort, pageable);
         List<PostResponse> postResponses = posts.getContent().stream()
                 .map(post -> {
                     UserEntity userEntity = findUserById(post.getUserId());
@@ -70,8 +70,8 @@ public class PostService {
         return PostListResponse.from(postResponses, posts);
     }
 
-    public List<PostResponse> searchPosts(String keyword) {
-        List<PostEntity> posts = postRepository.searchByTitleOrContent(keyword);
+    public List<PostResponse> searchPosts(Long groupId, String keyword) {
+        List<PostEntity> posts = postRepository.searchByTitleOrContent(groupId, keyword);
         return posts.stream().map(post -> {
             UserEntity userEntity = findUserById(post.getUserId());
             return PostResponse.from(post, userEntity);
@@ -105,11 +105,11 @@ public class PostService {
         }
     }
 
-    private Page<PostEntity> fetchSortedPosts(String sort, Pageable pageable) {
+    private Page<PostEntity> fetchSortedPosts(Long groupId, String sort, Pageable pageable) {
         if (SortType.fromDescription(sort).equals(SortType.DESC)) {
-            return postRepository.findAllByOrderByCreatedAtDesc(pageable);
+            return postRepository.findAllByGroupIdOrderByCreatedAtDesc(groupId, pageable);
         } else {
-            return postRepository.findAllByOrderByCreatedAtAsc(pageable);
+            return postRepository.findAllByGroupIdOrderByCreatedAtAsc(groupId, pageable);
         }
     }
 }

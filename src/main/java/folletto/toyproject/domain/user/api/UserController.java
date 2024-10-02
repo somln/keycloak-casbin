@@ -11,7 +11,9 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/api/users")
+import java.util.List;
+
+@RequestMapping("/api")
 @RestController
 @RequiredArgsConstructor
 public class UserController {
@@ -24,11 +26,22 @@ public class UserController {
         return ResponseDto.created();
     }
 
-    @GetMapping("/me")
+    @GetMapping("/users/me")
     @RolesAllowed({"USER"})
     public ResponseDto<UserResponse> findMyInfo() {
-        UserResponse user = userService.findMyInfo();
-        return ResponseDto.okWithData(user);
+        return ResponseDto.okWithData(userService.findMyInfo());
+    }
+
+    @GetMapping("/groups/{groupId}/users")
+    @RolesAllowed("USER")
+    public ResponseDto<List<UserResponse>> findUsersByGroupId(@PathVariable Long groupId) {
+        return ResponseDto.okWithData(userService.findUserByGroup(groupId));
+    }
+
+    @GetMapping("/{userId}")
+    @RolesAllowed("USER")
+    public ResponseDto<UserResponse> findUserById(@PathVariable Long userId) {
+        return ResponseDto.okWithData(userService.findUser(userId));
     }
 
 }

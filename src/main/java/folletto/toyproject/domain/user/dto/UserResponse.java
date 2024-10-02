@@ -6,7 +6,7 @@ public record UserResponse(
         Long userId,
         String username,
         String email,
-        String string
+        String name
 ) {
     public static UserResponse from(UserEntity user) {
         return new UserResponse(
