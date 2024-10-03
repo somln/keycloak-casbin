@@ -45,11 +45,10 @@ public class PostApi {
     @RolesAllowed({"USER"})
     public ResponseDto<Void> createPost(
             @PathVariable Long groupId,
-            @RequestBody @Valid PostRequest postRequest,
-            HttpServletRequest servletRequest
+            @RequestBody @Valid PostRequest postRequest
 
     ) {
-        UserEntity currentUser = authorizationVerifier.verify(servletRequest, groupId);
+        UserEntity currentUser = authorizationVerifier.verify("post", "POST", groupId);
         postService.createPost(groupId, postRequest, currentUser);
         return ResponseDto.created();
     }

@@ -22,8 +22,7 @@ public class GroupApi {
     @PostMapping()
     @RolesAllowed({"USER"})
     public ResponseDto<Void> createGroup(
-            @RequestBody GroupRequest groupRequest,
-            HttpServletRequest servletRequest
+            @RequestBody GroupRequest groupRequest
     ) {
         groupService.createGroup(groupRequest);
         return ResponseDto.created();

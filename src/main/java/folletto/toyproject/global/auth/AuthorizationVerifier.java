@@ -22,18 +22,16 @@ public class AuthorizationVerifier {
     private final GroupRepository groupRepository;
     private final Enforcer enforcer;
 
-    public UserEntity verify(HttpServletRequest request, Long groupId) {
+    public UserEntity verify(String obj, String act, Long groupId) {
         KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userUUID = principal.getName();
         UserEntity user = findUserByUUID(userUUID);
         GroupEntity group = findGroupById(groupId);
 
-        String username = user.getUsername();
-        String path = request.getRequestURI();
-        String method = request.getMethod();
-        String groupName = group.getGroupName();
+        String sub = user.getUsername();
+        String dom = group.getGroupName();
 
-        if (!enforcer.enforce(username, path, method, groupName)) {
+        if (!enforcer.enforce(sub, obj, act, dom)) {
             throw new ApplicationException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         return user;
