@@ -18,17 +18,20 @@ public class GroupEntity {
 
     private String groupName;
     private String description;
+    private boolean isMasterGroup;
 
     @Builder
-    public GroupEntity(String groupName, String description) {
+    public GroupEntity(String groupName, String description, boolean isMasterGroup) {
         this.groupName = groupName;
         this.description = description;
+        this.isMasterGroup = isMasterGroup;
     }
 
     public static GroupEntity from(GroupRequest groupRequest) {
         return GroupEntity.builder()
                 .groupName(groupRequest.groupName())
                 .description(groupRequest.description())
+                .isMasterGroup(false)
                 .build();
     }
 

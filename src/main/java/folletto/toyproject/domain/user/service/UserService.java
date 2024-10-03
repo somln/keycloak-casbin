@@ -7,10 +7,12 @@ import folletto.toyproject.domain.user.dto.SignupRequest;
 import folletto.toyproject.domain.user.dto.UserResponse;
 import folletto.toyproject.domain.user.entity.UserEntity;
 import folletto.toyproject.domain.user.repository.UserRepository;
+import folletto.toyproject.global.casbin.AuthorizationManager;
 import folletto.toyproject.global.exception.ApplicationException;
 import folletto.toyproject.global.exception.ErrorCode;
-import folletto.toyproject.global.auth.KeyCloakClient;
-import folletto.toyproject.global.auth.KeycloakSignupRequest;
+import folletto.toyproject.global.keycloak.KeyCloakClient;
+import folletto.toyproject.global.keycloak.KeycloakSignupRequest;
+import java.util.Objects;
 import org.keycloak.KeycloakPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,13 +22,16 @@ import java.util.List;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final KeyCloakClient keyCloakClient;
-
-    public UserService(UserRepository userRepository, KeyCloakClient keyCloakClient) {
+    public UserService(UserRepository userRepository, KeyCloakClient keyCloakClient,
+            AuthorizationManager authorizationManager) {
         this.userRepository = userRepository;
         this.keyCloakClient = keyCloakClient;
+        this.authorizationManager = authorizationManager;
     }
+
+    private final UserRepository userRepository;
+    private final KeyCloakClient keyCloakClient;
+    private final AuthorizationManager authorizationManager;
 
     public void signUp(SignupRequest signupRequest) {
         validateDuplicateUser(signupRequest);
@@ -58,7 +63,8 @@ public class UserService {
     }
 
     private UserEntity findCurrentUser() {
-        KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
         String userUUID = principal.getName();
         return findUserByUUID(userUUID);
     }
@@ -78,9 +84,21 @@ public class UserService {
         return UserResponse.from(user);
     }
 
-    private UserEntity findUserById(Long userId){
+    private UserEntity findUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
     }
 
+    public void setMasterUser(Long userId, Long groupId) {
+        UserEntity user = findUserById(userId);
+        validateGroupUser(groupId, user);
+        user.setMasterUser(true);
+        authorizationManager.addRole(user.getUsername(), groupId);
+    }
+
+    private void validateGroupUser(Long groupId, UserEntity user) {
+        if (!Objects.equals(user.getGroupId(), groupId)) {
+            throw new ApplicationException(ErrorCode.USER_NOT_IN_GROUP);
+        }
+    }
 }

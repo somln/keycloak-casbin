@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByGroupId(Long groupId);
 
     void deleteAllByGroupId(Long groupId);
+
+    boolean existsByGroupIdAndUserId(Long groupId, Long userId);
 }

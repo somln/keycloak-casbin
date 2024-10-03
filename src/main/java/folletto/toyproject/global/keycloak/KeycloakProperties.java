@@ -1,4 +1,4 @@
-package folletto.toyproject.global.auth;
+package folletto.toyproject.global.keycloak;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;

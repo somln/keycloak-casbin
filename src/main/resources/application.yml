@@ -1,6 +1,5 @@
 spring:
   datasource:
-    # docker compose 사용 시 수정 예정
     url: jdbc:postgresql://localhost:5432/mydb
     username: user
     password: 1234

@@ -1,4 +1,4 @@
-package folletto.toyproject.global.auth;
+package folletto.toyproject.global.casbin;
 
 import folletto.toyproject.domain.group.entity.GroupEntity;
 import folletto.toyproject.domain.group.repository.GroupRepository;
@@ -12,11 +12,9 @@ import org.keycloak.KeycloakPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-
 @Component
 @RequiredArgsConstructor
-public class AuthorizationVerifier {
+public class AuthorizationManager {
 
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
@@ -47,4 +45,9 @@ public class AuthorizationVerifier {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.GROUP_NOT_FOUND));
     }
 
+    public void addRole(String username, Long groupId) {
+        GroupEntity group = findGroupById(groupId);
+        enforcer.addRoleForUserInDomain(username, group.getGroupName(), group.getGroupName());
+        enforcer.savePolicy();
+    }
 }

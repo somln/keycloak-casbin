@@ -6,14 +6,16 @@ public record UserResponse(
         Long userId,
         String username,
         String email,
-        String name
+        String name,
+        boolean isMasterUser
 ) {
     public static UserResponse from(UserEntity user) {
         return new UserResponse(
                 user.getUserId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getName()
+                user.getName(),
+                user.isMasterUser()
         );
     }
 }

@@ -1,4 +1,4 @@
-package folletto.toyproject.global.config;
+package folletto.toyproject.global.keycloak;
 
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration;

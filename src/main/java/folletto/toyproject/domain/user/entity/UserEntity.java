@@ -28,14 +28,16 @@ public class UserEntity {
     private String email;
 
     private Long groupId;
+    private boolean isMasterUser;
 
     @Builder
-    public UserEntity(String userUUID, String username, String name, String email, Long groupId) {
+    public UserEntity(String userUUID, String username, String name, String email, Long groupId, boolean isMasterUser) {
         this.userUUID = userUUID;
         this.username = username;
         this.name = name;
         this.email = email;
         this.groupId = groupId;
+        this.isMasterUser = isMasterUser;
     }
 
     public static UserEntity from(SignupRequest signupRequest, String userUUID) {
@@ -46,7 +48,11 @@ public class UserEntity {
                 .name(signupRequest.username())
                 .email(signupRequest.email())
                 .groupId(signupRequest.groupId())
+                .isMasterUser(false)
                 .build();
     }
 
+    public void setMasterUser(boolean isMasterUser) {
+        this.isMasterUser = isMasterUser;
+    }
 }

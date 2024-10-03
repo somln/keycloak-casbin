@@ -19,7 +19,8 @@ public enum ErrorCode {
     COMMENT_NOT_FOUND(NOT_FOUND, "댓글을 찾을 수 없습니다."),
     TOKEN_REQUEST_FAILED(FORBIDDEN, "관리자 토큰을 요청하는 중 오류가 발생했습니다."),
     GROUP_NOT_FOUND(NOT_FOUND, "그룹을 찾을 수 없습니다."),
-    GROUP_NAME_ALREADY_EXISTS(BAD_REQUEST, "이미 존재하는 그룹 이름입니다.");
+    GROUP_NAME_ALREADY_EXISTS(BAD_REQUEST, "이미 존재하는 그룹 이름입니다."),
+    USER_NOT_IN_GROUP(BAD_REQUEST, "해당 그룹에 속해있지 않은 사용자입니다."),;
 
     private final HttpStatus httpStatus;
     private final String message;

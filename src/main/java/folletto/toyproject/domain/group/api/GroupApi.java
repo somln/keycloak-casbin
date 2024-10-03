@@ -3,13 +3,11 @@ package folletto.toyproject.domain.group.api;
 import folletto.toyproject.domain.group.dto.GroupRequest;
 import folletto.toyproject.domain.group.dto.GroupResponse;
 import folletto.toyproject.domain.group.service.GroupService;
-import folletto.toyproject.global.auth.AuthorizationVerifier;
 import folletto.toyproject.global.dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController

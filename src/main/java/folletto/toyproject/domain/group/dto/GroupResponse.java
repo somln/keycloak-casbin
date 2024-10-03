@@ -5,9 +5,10 @@ import folletto.toyproject.domain.group.entity.GroupEntity;
 public record GroupResponse(
         Long groupId,
         String groupName,
-        String description
+        String description,
+        boolean isMasterGroup
 ) {
     public static GroupResponse from(GroupEntity groupEntity) {
-        return new GroupResponse(groupEntity.getGroupId(), groupEntity.getGroupName(), groupEntity.getDescription());
+        return new GroupResponse(groupEntity.getGroupId(), groupEntity.getGroupName(), groupEntity.getDescription(), groupEntity.isMasterGroup());
     }
 }

@@ -9,6 +9,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,6 +43,13 @@ public class UserController {
     @RolesAllowed("USER")
     public ResponseDto<UserResponse> findUserById(@PathVariable Long userId) {
         return ResponseDto.okWithData(userService.findUser(userId));
+    }
+
+
+    @PatchMapping ("/{userId}/groups/{groupId}/set-master")
+    public ResponseDto<Void> setMasterUser(@PathVariable Long userId, @PathVariable Long groupId) {
+        userService.setMasterUser(userId, groupId);
+        return ResponseDto.ok();
     }
 
 }
