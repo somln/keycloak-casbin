@@ -45,9 +45,15 @@ public class UserController {
         return ResponseDto.okWithData(userService.findUser(userId));
     }
 
-    @PatchMapping ("/{userId}/groups/{groupId}/set-master")
+    @PatchMapping ("/users/{userId}/groups/{groupId}/set-master")
     public ResponseDto<Void> setMasterUser(@PathVariable Long userId, @PathVariable Long groupId) {
         userService.setMasterUser(userId, groupId);
+        return ResponseDto.ok();
+    }
+
+    @PatchMapping("/users/{userId}/groups/{groupId}/unset-master")
+    public ResponseDto<Void> unsetMasterUser(@PathVariable Long userId, @PathVariable Long groupId) {
+        userService.unsetMasterUser(userId, groupId);
         return ResponseDto.ok();
     }
 

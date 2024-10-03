@@ -68,8 +68,11 @@ public class AuthorizationManager {
         GroupEntity group = findGroupById(user.getGroupId());
 
         if (group.isMasterGroup()) {
-            // 마스터 그룹일 경우, 사용자의 요청에 따라 바로 권한을 부여
-            roles.forEach(role -> enforcer.addPolicy(user.getUsername(), role.object(), role.act(), role.object()));
+            // 마스터 그룹일 경우, 모든 그룹에 해당 권한을 부여
+            List<GroupEntity> allGroups = groupRepository.findAll();  // 모든 그룹 가져오기
+            allGroups.forEach(g -> {
+                roles.forEach(role -> enforcer.addPolicy(user.getUsername(), role.object(), role.act(), g.getGroupName()));
+            });
         } else {
             // 마스터 그룹이 아닐 경우, 그룹이 해당 권한을 가지고 있는지 먼저 확인
             roles.forEach(role -> {
@@ -106,5 +109,24 @@ public class AuthorizationManager {
 
     private String findMasterGroup() {
         return groupRepository.findByIsMasterGroup(true).getGroupName();
+    }
+
+    public void deleteRole(String username, Long groupId) {
+        GroupEntity group = findGroupById(groupId);
+        enforcer.deleteRoleForUserInDomain(username, group.getGroupName(), group.getGroupName());
+        enforcer.savePolicy();
+    }
+
+    public void deleteGroupPolicies(Long groupId, RoleRequest request) {
+        GroupEntity group = findGroupById(groupId);
+        request.roles().forEach(role -> enforcer.removePolicy(group.getGroupName(), role.object(), role.act(), group.getGroupName()));
+        enforcer.savePolicy();
+    }
+
+    public void deleteUserPolicies(Long userId, RoleRequest request) {
+        UserEntity user = findUserById(userId);
+        GroupEntity group = findGroupById(user.getGroupId());
+        request.roles().forEach(role -> enforcer.removePolicy(user.getUsername(), role.object(), role.act(), group.getGroupName()));
+        enforcer.savePolicy();
     }
 }

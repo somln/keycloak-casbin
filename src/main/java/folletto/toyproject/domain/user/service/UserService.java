@@ -101,4 +101,11 @@ public class UserService {
             throw new ApplicationException(ErrorCode.USER_NOT_IN_GROUP);
         }
     }
+
+    public void unsetMasterUser(Long userId, Long groupId) {
+        UserEntity user = findUserById(userId);
+        validateGroupUser(groupId, user);
+        user.setMasterUser(false);
+        authorizationManager.deleteRole(user.getUsername(), groupId);
+    }
 }
