@@ -8,6 +8,8 @@ import folletto.toyproject.domain.user.dto.UserResponse;
 import folletto.toyproject.domain.user.entity.UserEntity;
 import folletto.toyproject.domain.user.repository.UserRepository;
 import folletto.toyproject.global.casbin.AuthorizationManager;
+import folletto.toyproject.global.dto.ActionType;
+import folletto.toyproject.global.dto.ObjectType;
 import folletto.toyproject.global.exception.ApplicationException;
 import folletto.toyproject.global.exception.ErrorCode;
 import folletto.toyproject.global.keycloak.KeyCloakClient;
@@ -18,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -33,6 +36,7 @@ public class UserService {
     private final KeyCloakClient keyCloakClient;
     private final AuthorizationManager authorizationManager;
 
+    @Transactional
     public void signUp(SignupRequest signupRequest) {
         validateDuplicateUser(signupRequest);
         String userUUID = keyCloakClient.signup(KeycloakSignupRequest.from(signupRequest));
@@ -75,12 +79,15 @@ public class UserService {
     }
 
     public List<UserResponse> findUserByGroup(Long groupId) {
+        authorizationManager.verify(ObjectType.USER, ActionType.READ, groupId);
         return userRepository.findByGroupId(groupId).stream()
                 .map(UserResponse::from).toList();
     }
 
     public UserResponse findUser(Long userId) {
         UserEntity user = findUserById(userId);
+        Long groupId = user.getGroupId();
+        authorizationManager.verify(ObjectType.USER, ActionType.READ, groupId);
         return UserResponse.from(user);
     }
 
@@ -89,10 +96,14 @@ public class UserService {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
     }
 
+    @Transactional
     public void setMasterUser(Long userId, Long groupId) {
         UserEntity user = findUserById(userId);
+
+        authorizationManager.verify(ObjectType.ROLE, ActionType.UPDATE, groupId);
         validateGroupUser(groupId, user);
-        user.setMasterUser(true);
+
+        user.setMasterUser();
         authorizationManager.addRole(user.getUsername(), groupId);
     }
 
@@ -102,10 +113,14 @@ public class UserService {
         }
     }
 
+    @Transactional
     public void unsetMasterUser(Long userId, Long groupId) {
         UserEntity user = findUserById(userId);
+
+        authorizationManager.verify(ObjectType.ROLE, ActionType.UPDATE, groupId);
         validateGroupUser(groupId, user);
-        user.setMasterUser(false);
+
+        user.unsetMasterUser();
         authorizationManager.deleteRole(user.getUsername(), groupId);
     }
 }

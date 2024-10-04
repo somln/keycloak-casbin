@@ -1,7 +1,1 @@
 g2, super_admin, master_group
-
-p, groupA, post, GET, groupA
-p, groupA, post, POST, groupA
-p, groupA, post, PUT, groupA
-p, groupA, post, DELETE, groupA
-

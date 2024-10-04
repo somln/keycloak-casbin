@@ -52,7 +52,11 @@ public class UserEntity {
                 .build();
     }
 
-    public void setMasterUser(boolean isMasterUser) {
-        this.isMasterUser = isMasterUser;
+    public void setMasterUser() {
+        this.isMasterUser = true;
+    }
+
+    public void unsetMasterUser() {
+        this.isMasterUser = false;
     }
 }

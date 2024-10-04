@@ -1,11 +1,16 @@
 package folletto.toyproject.domain.post.api;
 
+import static folletto.toyproject.global.dto.ActionType.*;
+import static folletto.toyproject.global.dto.ObjectType.*;
+
 import folletto.toyproject.domain.post.dto.PostListResponse;
 import folletto.toyproject.domain.post.dto.PostRequest;
 import folletto.toyproject.domain.post.dto.PostResponse;
 import folletto.toyproject.domain.post.service.PostService;
 import folletto.toyproject.domain.user.entity.UserEntity;
 import folletto.toyproject.global.casbin.AuthorizationManager;
+import folletto.toyproject.global.dto.ActionType;
+import folletto.toyproject.global.dto.ObjectType;
 import folletto.toyproject.global.dto.ResponseDto;
 import folletto.toyproject.global.dto.SearchRequest;
 
@@ -15,16 +20,9 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+
 
 @RequestMapping("/api")
 @RestController
@@ -32,21 +30,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostApi {
 
     private final PostService postService;
-    private final AuthorizationManager authorizationVerifier;
 
-    @PostMapping("groups/{groupId}/posts")
+    @PostMapping("/groups/{groupId}/posts")
     @RolesAllowed({"USER"})
     public ResponseDto<Void> createPost(
             @PathVariable Long groupId,
             @RequestBody @Valid PostRequest postRequest
-
     ) {
-        UserEntity currentUser = authorizationVerifier.verify("post", "POST", groupId);
-        postService.createPost(groupId, postRequest, currentUser);
+        postService.createPost(groupId, postRequest);
         return ResponseDto.created();
     }
 
-    @PutMapping("posts/{postId}")
+    @PutMapping("/posts/{postId}")
     @RolesAllowed({"USER"})
     ResponseDto<Void> updatePost(
             @PathVariable Long postId,
@@ -55,7 +50,7 @@ public class PostApi {
         return ResponseDto.ok();
     }
 
-    @DeleteMapping("posts/{postId}")
+    @DeleteMapping("/posts/{postId}")
     @RolesAllowed({"USER"})
     ResponseDto<Void> deletePost(
             @PathVariable Long postId) {
@@ -63,7 +58,7 @@ public class PostApi {
         return ResponseDto.ok();
     }
 
-    @GetMapping("posts/{postId}")
+    @GetMapping("/posts/{postId}")
     @RolesAllowed({"USER"})
     ResponseDto<PostResponse> findPost(
             @PathVariable Long postId) {
@@ -71,7 +66,7 @@ public class PostApi {
         return ResponseDto.okWithData(postResponse);
     }
 
-    @GetMapping("groups/{groupId}/posts")
+    @GetMapping("/posts/groups/{groupId}")
     ResponseDto<PostListResponse> findPosts(
             @PathVariable Long groupId,
             @RequestParam String sort,

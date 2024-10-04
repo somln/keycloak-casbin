@@ -4,6 +4,8 @@ import folletto.toyproject.domain.group.entity.GroupEntity;
 import folletto.toyproject.domain.group.repository.GroupRepository;
 import folletto.toyproject.domain.user.entity.UserEntity;
 import folletto.toyproject.domain.user.repository.UserRepository;
+import folletto.toyproject.global.dto.ActionType;
+import folletto.toyproject.global.dto.ObjectType;
 import folletto.toyproject.global.exception.ApplicationException;
 import folletto.toyproject.global.exception.ErrorCode;
 import java.util.List;
@@ -21,7 +23,8 @@ public class AuthorizationManager {
     private final GroupRepository groupRepository;
     private final Enforcer enforcer;
 
-    public UserEntity verify(String obj, String act, Long groupId) {
+    public UserEntity verify(ObjectType obj, ActionType act, Long groupId) {
+
         KeycloakPrincipal<?> principal = (KeycloakPrincipal<?>) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userUUID = principal.getName();
         UserEntity user = findUserByUUID(userUUID);
@@ -31,12 +34,11 @@ public class AuthorizationManager {
         String dom = group.getGroupName();
         String masterGroup = findMasterGroup();
 
-        if(enforcer.getRolesForUserInDomain(sub, masterGroup).isEmpty()){  //마스터 그룹 마스터 관리자가 아닐 경우
-            if (!enforcer.enforce(sub, obj, act, dom)) {
+        if (enforcer.getRolesForUserInDomain(sub, masterGroup).isEmpty()) {  // 마스터 그룹의 마스터 관리자가 아닐 경우 검사
+            if (!enforcer.enforce(sub, obj.name(), act.name(), dom)) {  // 해당 권한이 없을 경우
                 throw new ApplicationException(ErrorCode.UNAUTHORIZED_ACCESS);
             }
         }
-
         return user;
     }
 
@@ -46,7 +48,7 @@ public class AuthorizationManager {
         enforcer.savePolicy();
     }
 
-    public List<String > getRoles(Long userId, Long groupId) {
+    public List<String> getRoles(Long userId, Long groupId) {
         UserEntity user = findUserById(userId);
         GroupEntity group = findGroupById(groupId);
         return enforcer.getRolesForUserInDomain(user.getUsername(), group.getGroupName());
@@ -54,7 +56,13 @@ public class AuthorizationManager {
 
     public void addGroupPolicies(Long groupId, List<AddRoleRequest> roles) {
         GroupEntity group = findGroupById(groupId);
-        roles.forEach(role -> enforcer.addPolicy(group.getGroupName(), role.object(), role.act(), group.getGroupName()));
+        roles.forEach(role -> {
+            enforcer.addPolicy(
+                    group.getGroupName(),
+                    ObjectType.from(role.object()),
+                    ActionType.from(role.act()),
+                    group.getGroupName());
+        });
         enforcer.savePolicy();
     }
 
@@ -71,14 +79,27 @@ public class AuthorizationManager {
             // 마스터 그룹일 경우, 모든 그룹에 해당 권한을 부여
             List<GroupEntity> allGroups = groupRepository.findAll();  // 모든 그룹 가져오기
             allGroups.forEach(g -> {
-                roles.forEach(role -> enforcer.addPolicy(user.getUsername(), role.object(), role.act(), g.getGroupName()));
+                roles.forEach(role -> {
+                    enforcer.addPolicy(user.getUsername(),
+                            ObjectType.from(role.object()),
+                            ActionType.from(role.act()),
+                            g.getGroupName());
+                });
             });
         } else {
             // 마스터 그룹이 아닐 경우, 그룹이 해당 권한을 가지고 있는지 먼저 확인
             roles.forEach(role -> {
-                if (enforcer.enforce(group.getGroupName(), role.object(), role.act(), group.getGroupName())) {
-                    // 그룹이 해당 권한을 가지고 있는 경우에만 사용자에게 권한 부여
-                    enforcer.addPolicy(user.getUsername(), role.object(), role.act(), group.getGroupName());
+                if (enforcer.enforce(
+                        group.getGroupName(),
+                        ObjectType.from(role.object()),
+                        ActionType.from(role.act()),
+                        group.getGroupName())) {
+
+                    enforcer.addPolicy(
+                            user.getUsername(),
+                            ObjectType.from(role.object()),
+                            ActionType.from(role.act()),
+                            group.getGroupName());
                 } else {
                     throw new ApplicationException(ErrorCode.GROUP_DOES_NOT_HAVE_PERMISSION);
                 }
@@ -119,14 +140,27 @@ public class AuthorizationManager {
 
     public void deleteGroupPolicies(Long groupId, RoleRequest request) {
         GroupEntity group = findGroupById(groupId);
-        request.roles().forEach(role -> enforcer.removePolicy(group.getGroupName(), role.object(), role.act(), group.getGroupName()));
+        request.roles().forEach(role -> {
+            enforcer.removePolicy(
+                    group.getGroupName(),
+                    ObjectType.from(role.object()),
+                    ActionType.from(role.act()),
+                    group.getGroupName());
+        });
         enforcer.savePolicy();
     }
 
     public void deleteUserPolicies(Long userId, RoleRequest request) {
         UserEntity user = findUserById(userId);
         GroupEntity group = findGroupById(user.getGroupId());
-        request.roles().forEach(role -> enforcer.removePolicy(user.getUsername(), role.object(), role.act(), group.getGroupName()));
+        request.roles().forEach(role -> {
+            enforcer.removePolicy(
+                    user.getUsername(),
+                    ObjectType.from(role.object()),
+                    ActionType.from(role.act()),
+                    group.getGroupName());
+        });
         enforcer.savePolicy();
     }
+
 }
