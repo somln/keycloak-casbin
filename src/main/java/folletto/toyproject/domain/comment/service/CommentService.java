@@ -1,10 +1,10 @@
 package folletto.toyproject.domain.comment.service;
 
-import static folletto.toyproject.global.dto.ActionType.CREATE;
-import static folletto.toyproject.global.dto.ActionType.DELETE;
-import static folletto.toyproject.global.dto.ActionType.READ;
-import static folletto.toyproject.global.dto.ActionType.UPDATE;
-import static folletto.toyproject.global.dto.ObjectType.BOARD;
+import static folletto.toyproject.global.casbin.ActionType.CREATE;
+import static folletto.toyproject.global.casbin.ActionType.DELETE;
+import static folletto.toyproject.global.casbin.ActionType.READ;
+import static folletto.toyproject.global.casbin.ActionType.UPDATE;
+import static folletto.toyproject.global.casbin.ObjectType.BOARD;
 
 import folletto.toyproject.domain.comment.dto.CommentRequest;
 import folletto.toyproject.domain.comment.dto.CommentResponse;
@@ -21,8 +21,6 @@ import folletto.toyproject.global.exception.ErrorCode;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
-import org.keycloak.KeycloakPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,16 +1,9 @@
 package folletto.toyproject.domain.post.api;
 
-import static folletto.toyproject.global.dto.ActionType.*;
-import static folletto.toyproject.global.dto.ObjectType.*;
-
 import folletto.toyproject.domain.post.dto.PostListResponse;
 import folletto.toyproject.domain.post.dto.PostRequest;
 import folletto.toyproject.domain.post.dto.PostResponse;
 import folletto.toyproject.domain.post.service.PostService;
-import folletto.toyproject.domain.user.entity.UserEntity;
-import folletto.toyproject.global.casbin.AuthorizationManager;
-import folletto.toyproject.global.dto.ActionType;
-import folletto.toyproject.global.dto.ObjectType;
 import folletto.toyproject.global.dto.ResponseDto;
 import folletto.toyproject.global.dto.SearchRequest;
 

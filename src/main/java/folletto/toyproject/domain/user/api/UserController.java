@@ -46,12 +46,14 @@ public class UserController {
     }
 
     @PatchMapping ("/users/{userId}/groups/{groupId}/set-master")
+    @RolesAllowed("USER")
     public ResponseDto<Void> setMasterUser(@PathVariable Long userId, @PathVariable Long groupId) {
         userService.setMasterUser(userId, groupId);
         return ResponseDto.ok();
     }
 
     @PatchMapping("/users/{userId}/groups/{groupId}/unset-master")
+    @RolesAllowed("USER")
     public ResponseDto<Void> unsetMasterUser(@PathVariable Long userId, @PathVariable Long groupId) {
         userService.unsetMasterUser(userId, groupId);
         return ResponseDto.ok();

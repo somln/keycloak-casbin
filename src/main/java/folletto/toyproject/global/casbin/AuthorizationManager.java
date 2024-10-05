@@ -1,11 +1,15 @@
 package folletto.toyproject.global.casbin;
 
+import static folletto.toyproject.global.casbin.ActionType.CREATE;
+import static folletto.toyproject.global.casbin.ActionType.DELETE;
+import static folletto.toyproject.global.casbin.ActionType.READ;
+import static folletto.toyproject.global.casbin.ObjectType.GROUP;
+import static folletto.toyproject.global.casbin.ObjectType.ROLE;
+
 import folletto.toyproject.domain.group.entity.GroupEntity;
 import folletto.toyproject.domain.group.repository.GroupRepository;
 import folletto.toyproject.domain.user.entity.UserEntity;
 import folletto.toyproject.domain.user.repository.UserRepository;
-import folletto.toyproject.global.dto.ActionType;
-import folletto.toyproject.global.dto.ObjectType;
 import folletto.toyproject.global.exception.ApplicationException;
 import folletto.toyproject.global.exception.ErrorCode;
 import java.util.List;
@@ -54,52 +58,39 @@ public class AuthorizationManager {
         return enforcer.getRolesForUserInDomain(user.getUsername(), group.getGroupName());
     }
 
-    public void addGroupPolicies(Long groupId, List<AddRoleRequest> roles) {
+    public void deleteRole(String username, Long groupId) {
         GroupEntity group = findGroupById(groupId);
-        roles.forEach(role -> {
-            enforcer.addPolicy(
-                    group.getGroupName(),
-                    ObjectType.from(role.object()),
-                    ActionType.from(role.act()),
-                    group.getGroupName());
+        enforcer.deleteRoleForUserInDomain(username, group.getGroupName(), group.getGroupName());
+        enforcer.savePolicy();
+    }
+
+    public void addGroupPolicies(Long groupId, List<Policy> Polices) {
+        GroupEntity group = findGroupById(groupId);
+        verify(ROLE, CREATE, group.getGroupId());
+        Polices.forEach(policy -> {
+            addPolicyToEnforcer(group.getGroupName(), policy, group.getGroupName());
         });
         enforcer.savePolicy();
     }
 
-    public List<List<String>> getGroupPolicies(Long groupId) {
-        GroupEntity group = findGroupById(groupId);
-        return enforcer.getFilteredPolicy(0, group.getGroupName());
-    }
-
-    public void addUserPolicies(Long userId, List<AddRoleRequest> roles) {
+    public void addUserPolicies(Long userId, List<Policy> Polices) {
         UserEntity user = findUserById(userId);
         GroupEntity group = findGroupById(user.getGroupId());
+        verify(ROLE, CREATE, group.getGroupId());
 
         if (group.isMasterGroup()) {
-            // 마스터 그룹일 경우, 모든 그룹에 해당 권한을 부여
+            // 사용자가 속한 그룹이 마스터 그룹일 경우, 모든 그룹에 해당 권한을 부여
             List<GroupEntity> allGroups = groupRepository.findAll();  // 모든 그룹 가져오기
             allGroups.forEach(g -> {
-                roles.forEach(role -> {
-                    enforcer.addPolicy(user.getUsername(),
-                            ObjectType.from(role.object()),
-                            ActionType.from(role.act()),
-                            g.getGroupName());
+                Polices.forEach(policy -> {
+                    addPolicyToEnforcer(user.getUsername(), policy, group.getGroupName());
                 });
             });
         } else {
             // 마스터 그룹이 아닐 경우, 그룹이 해당 권한을 가지고 있는지 먼저 확인
-            roles.forEach(role -> {
-                if (enforcer.enforce(
-                        group.getGroupName(),
-                        ObjectType.from(role.object()),
-                        ActionType.from(role.act()),
-                        group.getGroupName())) {
-
-                    enforcer.addPolicy(
-                            user.getUsername(),
-                            ObjectType.from(role.object()),
-                            ActionType.from(role.act()),
-                            group.getGroupName());
+            Polices.forEach(policy -> {
+                if (groupHasPermission(group, policy)) {
+                    addPolicyToEnforcer(user.getUsername(), policy, group.getGroupName());
                 } else {
                     throw new ApplicationException(ErrorCode.GROUP_DOES_NOT_HAVE_PERMISSION);
                 }
@@ -108,8 +99,62 @@ public class AuthorizationManager {
         enforcer.savePolicy();
     }
 
+    private boolean groupHasPermission(GroupEntity group, Policy policy) {
+        return enforcer.enforce(
+                group.getGroupName(),
+                ObjectType.from(policy.object()),
+                ActionType.from(policy.act()),
+                group.getGroupName()
+        );
+    }
+
+    private void addPolicyToEnforcer(String subject, Policy policy, String groupName) {
+        enforcer.addPolicy(
+                subject,
+                ObjectType.from(policy.object()),
+                ActionType.from(policy.act()),
+                groupName
+        );
+    }
+
+    public void deleteGroupPolicies(Long groupId, List<Policy> policies) {
+        GroupEntity group = findGroupById(groupId);
+        verify(ROLE, DELETE, group.getGroupId());
+        policies.forEach(policy -> {
+            deletePolicyToEnforcer(group.getGroupName(), policy, group.getGroupName());
+        });
+        enforcer.savePolicy();
+    }
+
+    public void deleteUserPolicies(Long userId, List<Policy> policies) {
+        UserEntity user = findUserById(userId);
+        GroupEntity group = findGroupById(user.getGroupId());
+        verify(ROLE, DELETE, group.getGroupId());
+        policies.forEach(policy -> {
+            deletePolicyToEnforcer(user.getUsername(), policy, group.getGroupName());
+        });
+        enforcer.savePolicy();
+    }
+
+    private void deletePolicyToEnforcer(String subject, Policy policy, String groupName) {
+        enforcer.removePolicy(
+                subject,
+                ObjectType.from(policy.object()),
+                ActionType.from(policy.act()),
+                groupName
+        );
+    }
+
+    public List<List<String>> getGroupPolicies(Long groupId) {
+        GroupEntity group = findGroupById(groupId);
+        verify(ROLE, READ, group.getGroupId());
+        return enforcer.getFilteredPolicy(0, group.getGroupName());
+    }
+
     public List<List<String>> getUserPolicies(Long userId) {
         UserEntity user = findUserById(userId);
+        GroupEntity group = findGroupById(user.getGroupId());
+        verify(ROLE, READ, group.getGroupId());
         return enforcer.getFilteredPolicy(0, user.getUsername());
     }
 
@@ -131,36 +176,4 @@ public class AuthorizationManager {
     private String findMasterGroup() {
         return groupRepository.findByIsMasterGroup(true).getGroupName();
     }
-
-    public void deleteRole(String username, Long groupId) {
-        GroupEntity group = findGroupById(groupId);
-        enforcer.deleteRoleForUserInDomain(username, group.getGroupName(), group.getGroupName());
-        enforcer.savePolicy();
-    }
-
-    public void deleteGroupPolicies(Long groupId, RoleRequest request) {
-        GroupEntity group = findGroupById(groupId);
-        request.roles().forEach(role -> {
-            enforcer.removePolicy(
-                    group.getGroupName(),
-                    ObjectType.from(role.object()),
-                    ActionType.from(role.act()),
-                    group.getGroupName());
-        });
-        enforcer.savePolicy();
-    }
-
-    public void deleteUserPolicies(Long userId, RoleRequest request) {
-        UserEntity user = findUserById(userId);
-        GroupEntity group = findGroupById(user.getGroupId());
-        request.roles().forEach(role -> {
-            enforcer.removePolicy(
-                    user.getUsername(),
-                    ObjectType.from(role.object()),
-                    ActionType.from(role.act()),
-                    group.getGroupName());
-        });
-        enforcer.savePolicy();
-    }
-
 }

@@ -1,18 +1,8 @@
 package folletto.toyproject.domain.comment.api;
 
-import static folletto.toyproject.global.dto.ActionType.CREATE;
-import static folletto.toyproject.global.dto.ActionType.DELETE;
-import static folletto.toyproject.global.dto.ActionType.READ;
-import static folletto.toyproject.global.dto.ActionType.UPDATE;
-import static folletto.toyproject.global.dto.ObjectType.BOARD;
-
 import folletto.toyproject.domain.comment.dto.CommentRequest;
 import folletto.toyproject.domain.comment.dto.CommentResponse;
 import folletto.toyproject.domain.comment.service.CommentService;
-import folletto.toyproject.domain.user.entity.UserEntity;
-import folletto.toyproject.global.casbin.AuthorizationManager;
-import folletto.toyproject.global.dto.ActionType;
-import folletto.toyproject.global.dto.ObjectType;
 import folletto.toyproject.global.dto.ResponseDto;
 
 import java.util.List;

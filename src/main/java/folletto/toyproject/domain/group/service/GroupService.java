@@ -14,11 +14,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static folletto.toyproject.global.dto.ActionType.CREATE;
-import static folletto.toyproject.global.dto.ActionType.DELETE;
-import static folletto.toyproject.global.dto.ActionType.READ;
-import static folletto.toyproject.global.dto.ActionType.UPDATE;
-import static folletto.toyproject.global.dto.ObjectType.GROUP;
+import static folletto.toyproject.global.casbin.ActionType.CREATE;
+import static folletto.toyproject.global.casbin.ActionType.DELETE;
+import static folletto.toyproject.global.casbin.ActionType.READ;
+import static folletto.toyproject.global.casbin.ActionType.UPDATE;
+import static folletto.toyproject.global.casbin.ObjectType.GROUP;
 
 @Service
 @RequiredArgsConstructor

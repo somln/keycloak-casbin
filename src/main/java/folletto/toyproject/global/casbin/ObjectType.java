@@ -1,4 +1,4 @@
-package folletto.toyproject.global.dto;
+package folletto.toyproject.global.casbin;
 
 public enum ObjectType {
     GROUP,
