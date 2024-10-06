@@ -28,6 +28,7 @@ public class AuthorizationApi {
         return ResponseDto.okWithData(authorizationManager.getRoles(userId, groupId));
     }
 
+    //그룹 권한 부여
     @PostMapping("/api/authorization/groups/{groupId}")
     public ResponseDto<Void> addGroupPolicy(
             @PathVariable Long groupId,
@@ -37,6 +38,7 @@ public class AuthorizationApi {
         return ResponseDto.created();
     }
 
+    //유저 권한 부여
     @PostMapping("/api/authorization/users/{userId}")
     public ResponseDto<Void> addUserPolicy(
             @PathVariable Long userId,
@@ -46,6 +48,7 @@ public class AuthorizationApi {
         return ResponseDto.created();
     }
 
+    //그룹 권한 삭제
     @DeleteMapping("/api/authorization/groups/{groupId}")
     public ResponseDto<Void> deleteGroupPolicy(
             @PathVariable Long groupId,
@@ -55,6 +58,7 @@ public class AuthorizationApi {
         return ResponseDto.ok();
     }
 
+    //유저 권한 삭제
     @DeleteMapping("/api/authorization/users/{userId}")
     public ResponseDto<Void> deleteUserPolicy(
             @PathVariable Long userId,
@@ -64,6 +68,7 @@ public class AuthorizationApi {
         return ResponseDto.ok();
     }
 
+    //그룹 권한 조회
     @GetMapping("/api/authorization/groups/{groupId}")
     public ResponseDto<List<List<String>>> getGroupPolicy(
             @PathVariable Long groupId
@@ -71,6 +76,7 @@ public class AuthorizationApi {
         return ResponseDto.okWithData(authorizationManager.getGroupPolicies(groupId));
     }
 
+    //유저 권한 조회
     @GetMapping("/api/authorization/users/{userId}")
     public ResponseDto<List<List<String>>> getUserPolicy(
             @PathVariable Long userId

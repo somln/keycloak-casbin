@@ -39,7 +39,7 @@ public class UserController {
         return ResponseDto.okWithData(userService.findUserByGroup(groupId));
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("users/{userId}")
     @RolesAllowed("USER")
     public ResponseDto<UserResponse> findUserById(@PathVariable Long userId) {
         return ResponseDto.okWithData(userService.findUser(userId));
@@ -57,6 +57,12 @@ public class UserController {
     public ResponseDto<Void> unsetMasterUser(@PathVariable Long userId, @PathVariable Long groupId) {
         userService.unsetMasterUser(userId, groupId);
         return ResponseDto.ok();
+    }
+
+    @GetMapping("/groups/{groupId}/users/master")
+    @RolesAllowed("USER")
+    public ResponseDto<List<UserResponse>> findMasterUser(@PathVariable Long groupId) {
+        return ResponseDto.okWithData(userService.findMasterUsers(groupId));
     }
 
 }

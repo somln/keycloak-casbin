@@ -123,4 +123,10 @@ public class UserService {
         user.unsetMasterUser();
         authorizationManager.deleteRole(user.getUsername(), groupId);
     }
+
+    public List<UserResponse> findMasterUsers(Long groupId) {
+        authorizationManager.verify(ObjectType.ROLE, ActionType.READ, groupId);
+        return userRepository.findByGroupIdAndIsMasterUser(groupId, true).stream()
+                .map(UserResponse::from).toList();
+    }
 }
