@@ -19,15 +19,6 @@ public class AuthorizationApi {
 
     private final AuthorizationManager authorizationManager;
 
-    //일단 개발용
-    @GetMapping("/api/authorization/users/{userId}/roles/{groupId}")
-    public ResponseDto<List<String>> getRoles(
-            @PathVariable Long userId,
-            @PathVariable Long groupId
-    ) {
-        return ResponseDto.okWithData(authorizationManager.getRoles(userId, groupId));
-    }
-
     //그룹 권한 부여
     @PostMapping("/api/authorization/groups/{groupId}")
     public ResponseDto<Void> addGroupPolicy(

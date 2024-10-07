@@ -34,41 +34,28 @@ public class AuthorizationManager {
         UserEntity user = findUserByUUID(userUUID);
         GroupEntity group = findGroupById(groupId);
 
-        String sub = user.getUsername();
-        String dom = group.getGroupName();
-        String masterGroup = findMasterGroup();
-
-        if (enforcer.getRolesForUserInDomain(sub, masterGroup).isEmpty()) {  // 마스터 그룹의 마스터 관리자가 아닐 경우 검사
-            if (!enforcer.enforce(sub, obj.name(), act.name(), dom)) {  // 해당 권한이 없을 경우
-                throw new ApplicationException(ErrorCode.UNAUTHORIZED_ACCESS);
-            }
+        if (!enforcer.enforce(user.getUsername(), obj.name(), act.name(), group.getGroupName())) {  // 해당 권한이 없을 경우
+            throw new ApplicationException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         return user;
     }
 
-    public void addRole(String username, Long groupId) {
-        GroupEntity group = findGroupById(groupId);
-        enforcer.addRoleForUserInDomain(username, group.getGroupName(), group.getGroupName());
-        enforcer.savePolicy();
-    }
-
-    public List<String> getRoles(Long userId, Long groupId) {
-        UserEntity user = findUserById(userId);
-        GroupEntity group = findGroupById(groupId);
-        return enforcer.getRolesForUserInDomain(user.getUsername(), group.getGroupName());
-    }
-
-    public void deleteRole(String username, Long groupId) {
-        GroupEntity group = findGroupById(groupId);
-        enforcer.deleteRoleForUserInDomain(username, group.getGroupName(), group.getGroupName());
-        enforcer.savePolicy();
-    }
-
-    public void addGroupPolicies(Long groupId, List<Policy> Polices) {
+    public void addGroupPolicies(Long groupId, List<Policy> policies) {
         GroupEntity group = findGroupById(groupId);
         verify(ROLE, CREATE, group.getGroupId());
-        Polices.forEach(policy -> {
+
+        // 그룹의 마스터 유저 목록 가져오기
+        List<UserEntity> masterUsers = userRepository.findByGroupIdAndIsMasterUser(groupId, true);
+
+        // 그룹에 정책 추가
+        policies.forEach(policy -> {
+            // 그룹에 대한 정책 추가
             addPolicyToEnforcer(group.getGroupName(), policy, group.getGroupName());
+
+            // 각 마스터 유저에 대해 동일한 정책 추가
+            masterUsers.forEach(masterUser -> {
+                addPolicyToEnforcer(masterUser.getUsername(), policy, group.getGroupName());
+            });
         });
         enforcer.savePolicy();
     }
@@ -120,9 +107,22 @@ public class AuthorizationManager {
     public void deleteGroupPolicies(Long groupId, List<Policy> policies) {
         GroupEntity group = findGroupById(groupId);
         verify(ROLE, DELETE, group.getGroupId());
+
+        // 해당 그룹에 속한 마스터 유저 목록 가져오기
+        List<UserEntity> masterUsers = userRepository.findByGroupIdAndIsMasterUser(group.getGroupId(), true);
+
+        // 그룹에 대한 정책 삭제
         policies.forEach(policy -> {
             deletePolicyToEnforcer(group.getGroupName(), policy, group.getGroupName());
         });
+
+        // 마스터 유저에 대한 정책 삭제
+        masterUsers.forEach(masterUser -> {
+            policies.forEach(policy -> {
+                deletePolicyToEnforcer(masterUser.getUsername(), policy, group.getGroupName());
+            });
+        });
+
         enforcer.savePolicy();
     }
 
@@ -175,5 +175,27 @@ public class AuthorizationManager {
 
     private String findMasterGroup() {
         return groupRepository.findByIsMasterGroup(true).getGroupName();
+    }
+
+    public void addAdminUserPolicies(Long userId, Long groupId) {
+
+        GroupEntity group = findGroupById(groupId);
+        UserEntity user = findUserById(userId);
+
+        // 그룹에 해당하는 모든 정책 가져오기 (sub 기준으로 필터링)
+        List<List<String>> filteredPolicies = enforcer.getFilteredPolicy(0, group.getGroupName());
+
+        // 각 정책을 user에게 복사하여 할당
+        for (List<String> policy : filteredPolicies) {
+            String obj = policy.get(1);  // 객체 (예: BOARD)
+            String act = policy.get(2);  // 액션 (예: CREATE)
+            String dom = policy.get(3);  // 도메인 (예: group.getGroupName())
+
+            // 사용자에게 해당 정책 추가 (user.getUsername()을 기준으로)
+            enforcer.addPolicy(user.getUsername(), obj, act, dom);
+        }
+
+        // 정책을 영구적으로 저장
+        enforcer.savePolicy();
     }
 }

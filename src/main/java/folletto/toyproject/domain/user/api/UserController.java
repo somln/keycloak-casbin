@@ -52,13 +52,6 @@ public class UserController {
         return ResponseDto.ok();
     }
 
-    @PatchMapping("/users/{userId}/groups/{groupId}/unset-master")
-    @RolesAllowed("USER")
-    public ResponseDto<Void> unsetMasterUser(@PathVariable Long userId, @PathVariable Long groupId) {
-        userService.unsetMasterUser(userId, groupId);
-        return ResponseDto.ok();
-    }
-
     @GetMapping("/groups/{groupId}/users/master")
     @RolesAllowed("USER")
     public ResponseDto<List<UserResponse>> findMasterUser(@PathVariable Long groupId) {

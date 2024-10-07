@@ -106,25 +106,13 @@ public class UserService {
         validateGroupUser(groupId, user);
 
         user.setMasterUser();
-        authorizationManager.addRole(user.getUsername(), groupId)
-        ;
+        authorizationManager.addAdminUserPolicies(userId, groupId);
     }
 
     private void validateGroupUser(Long groupId, UserEntity user) {
         if (!Objects.equals(user.getGroupId(), groupId)) {
             throw new ApplicationException(ErrorCode.USER_NOT_IN_GROUP);
         }
-    }
-
-    @Transactional
-    public void unsetMasterUser(Long userId, Long groupId) {
-        UserEntity user = findUserById(userId);
-
-        authorizationManager.verify(ROLE, UPDATE, groupId);
-        validateGroupUser(groupId, user);
-
-        user.unsetMasterUser();
-        authorizationManager.deleteRole(user.getUsername(), groupId);
     }
 
     public List<UserResponse> findMasterUsers(Long groupId) {
