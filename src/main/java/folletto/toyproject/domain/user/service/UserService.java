@@ -1,5 +1,9 @@
 package folletto.toyproject.domain.user.service;
 
+import static folletto.toyproject.global.casbin.ActionType.READ;
+import static folletto.toyproject.global.casbin.ActionType.UPDATE;
+import static folletto.toyproject.global.casbin.ObjectType.ROLE;
+import static folletto.toyproject.global.casbin.ObjectType.USER;
 import static folletto.toyproject.global.exception.ErrorCode.EMAIL_ALREADY_EXISTS;
 import static folletto.toyproject.global.exception.ErrorCode.USERNAME_ALREADY_EXISTS;
 
@@ -8,8 +12,6 @@ import folletto.toyproject.domain.user.dto.UserResponse;
 import folletto.toyproject.domain.user.entity.UserEntity;
 import folletto.toyproject.domain.user.repository.UserRepository;
 import folletto.toyproject.global.casbin.AuthorizationManager;
-import folletto.toyproject.global.casbin.ActionType;
-import folletto.toyproject.global.casbin.ObjectType;
 import folletto.toyproject.global.exception.ApplicationException;
 import folletto.toyproject.global.exception.ErrorCode;
 import folletto.toyproject.global.keycloak.KeyCloakClient;
@@ -79,7 +81,7 @@ public class UserService {
     }
 
     public List<UserResponse> findUserByGroup(Long groupId) {
-        authorizationManager.verify(ObjectType.USER, ActionType.READ, groupId);
+        authorizationManager.verify(USER, READ, groupId);
         return userRepository.findByGroupId(groupId).stream()
                 .map(UserResponse::from).toList();
     }
@@ -87,7 +89,7 @@ public class UserService {
     public UserResponse findUser(Long userId) {
         UserEntity user = findUserById(userId);
         Long groupId = user.getGroupId();
-        authorizationManager.verify(ObjectType.USER, ActionType.READ, groupId);
+        authorizationManager.verify(USER, READ, groupId);
         return UserResponse.from(user);
     }
 
@@ -100,11 +102,12 @@ public class UserService {
     public void setMasterUser(Long userId, Long groupId) {
         UserEntity user = findUserById(userId);
 
-        authorizationManager.verify(ObjectType.ROLE, ActionType.UPDATE, groupId);
+        authorizationManager.verify(ROLE, UPDATE, groupId);
         validateGroupUser(groupId, user);
 
         user.setMasterUser();
-        authorizationManager.addRole(user.getUsername(), groupId);
+        authorizationManager.addRole(user.getUsername(), groupId)
+        ;
     }
 
     private void validateGroupUser(Long groupId, UserEntity user) {
@@ -117,7 +120,7 @@ public class UserService {
     public void unsetMasterUser(Long userId, Long groupId) {
         UserEntity user = findUserById(userId);
 
-        authorizationManager.verify(ObjectType.ROLE, ActionType.UPDATE, groupId);
+        authorizationManager.verify(ROLE, UPDATE, groupId);
         validateGroupUser(groupId, user);
 
         user.unsetMasterUser();
@@ -125,7 +128,7 @@ public class UserService {
     }
 
     public List<UserResponse> findMasterUsers(Long groupId) {
-        authorizationManager.verify(ObjectType.ROLE, ActionType.READ, groupId);
+        authorizationManager.verify(ROLE, READ, groupId);
         return userRepository.findByGroupIdAndIsMasterUser(groupId, true).stream()
                 .map(UserResponse::from).toList();
     }
